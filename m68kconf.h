@@ -89,7 +89,7 @@
  * If off, all interrupts will be autovectored and all interrupt requests will
  * auto-clear when the interrupt is serviced.
  */
-#define M68K_EMULATE_INT_ACK        OPT_OFF
+#define M68K_EMULATE_INT_ACK        OPT_ON
 #define M68K_INT_ACK_CALLBACK(A)    your_int_ack_handler_function(A)
 
 
@@ -108,7 +108,7 @@
 /* If ON, CPU will call the output reset callback when it encounters a reset
  * instruction.
  */
-#define M68K_EMULATE_RESET          OPT_OFF
+#define M68K_EMULATE_RESET          OPT_ON
 #define M68K_RESET_CALLBACK()       your_reset_handler_function()
 
 /* If ON, CPU will call the callback when it encounters a cmpi.l #v, dn

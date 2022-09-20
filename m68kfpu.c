@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "m68kcpu.h"
+
 extern void exit(int);
 
 static void fatalerror(const char *format, ...) {
@@ -21,7 +23,7 @@ static void fatalerror(const char *format, ...) {
 #define DOUBLE_EXPONENT					(unsigned long long)(0x7ff0000000000000)
 #define DOUBLE_MANTISSA					(unsigned long long)(0x000fffffffffffff)
 
-extern flag floatx80_is_nan( floatx80 a );
+extern char floatx80_is_nan( floatx80 a );
 
 // masks for packed dwords, positive k-factor
 static uint32 pkmask2[18] =

@@ -1,4 +1,3 @@
-
 /*============================================================================
 
 This C header file is part of the SoftFloat IEC/IEEE Floating-point Arithmetic
