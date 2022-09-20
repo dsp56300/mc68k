@@ -175,6 +175,8 @@
  */
 #define M68K_EMULATE_ADDRESS_ERROR  OPT_OFF
 
+/* Disable handling of bus errors. We do not expect them to happen and they cost performance, therefore removed */
+#define M68K_SUPPORT_BUS_ERROR OPT_OFF
 
 /* Turn ON to enable logging of illegal instruction calls.
  * M68K_LOG_FILEHANDLE must be #defined to a stdio file stream.
