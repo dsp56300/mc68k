@@ -34489,6 +34489,30 @@ static void m68k_op_unpk_16_mm(void)
 	m68ki_exception_illegal();
 }
 
+static void m68k_op_tblu(void)
+{
+	// {m68k_op_tblu, 0xffff, 0xf839, {34, 34, 34, 34} }
+	// F8h 39h 01h 80h|  00h 08h 4Bh E6h or		TBLU effective address=0x39, Dx=0, R=0, size=0
+	// F8h 39h 01h 80h|  00h 08h 4Eh 66h
+	short nextword=OPER_I_16();	// = 0x0180
+	int dx=(nextword>>12)&7;
+	int rounding=(nextword>>10)&1;
+	int size=(nextword>>6)&3;
+	if ((nextword&0x8B3F)!=0x100) {m68ki_exception_illegal(); return;}	// this is required.
+	if (size!=2) {m68ki_exception_illegal();return;}	// for now let's handle the .l version we've seen.
+	if (rounding){m68ki_exception_illegal();return;}	// for now let's handle the unrounded version we've seen.
+
+	int tablePtr=OPER_I_32();	// = lut address
+	int rd=REG_D[dx]&0xffff;
+	const int radix=8;
+	int frac=rd&((1<<radix)-1);
+	int address=tablePtr+(rd>>radix)*4;
+	
+	int a=m68ki_read_32(address),b=m68ki_read_32(address+4);
+	long long diff=b-a;
+	diff*=frac;
+	REG_D[dx]=a+(int)(diff>>radix);
+}
 
 /* ======================================================================== */
 /* ============================== END OF FILE ============================= */
@@ -36488,6 +36512,7 @@ static const opcode_handler_struct m68k_opcode_handler_table[] =
 	{m68k_op_bfins_32_aw         , 0xffff, 0xeff8, {  0,   0,  21,  21}},
 	{m68k_op_bfins_32_al         , 0xffff, 0xeff9, {  0,   0,  21,  21}},
 	{m68k_op_pflush_32           , 0xffff, 0xf518, {  0,   0,   0,   4}},
+	{m68k_op_tblu				 , 0xffff, 0xf839, { 34,  34,  34,  34}},
 	{0, 0, 0, {0, 0, 0, 0}}
 };
 
