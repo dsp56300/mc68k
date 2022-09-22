@@ -5,6 +5,11 @@
 
 namespace mc68k
 {
+	constexpr const char* g_csParFields[]     = {"CSBOOT", "CSPA0[1]", "CSPA0[2]", "CSPA0[3]", "CSPA0[4]", "CSPA0[5]", "CSPA0[6]", "CSPA1[0]", "CSPA1[1]", "CSPA1[2]", "CSPA1[3]", "CSPA1[4]"};
+	constexpr const char* g_csParSignals[]    = {"CSBOOT", "CS0",      "CS1",      "CS2",      "CS3",      "CS4",      "CS5"     , "CS6",    "CS7",      "CS8",      "CS9",      "CS10"      };
+	constexpr const char* g_csParAlternates[] = {"-",      "BR",       "BG",       "BGACK",    "FC0",      "FC1",      "FC2"     , "ADDR19", "ADDR20",   "ADDR21",   "ADDR22",   "ADDR23"    };
+	constexpr const char* g_csParDiscretes[]  = {"-",      "-",        "-",        "-",        "PC0",      "PC1",      "PC2"     , "PC3",    "PC4",      "PC5",      "PC6",      "ECLK"      };
+
 	Sim::Sim(Mc68k& _mc68k) : m_mc68k(_mc68k)
 	{
 		write16(PeriphAddress::Syncr, 0x3f00);
@@ -92,6 +97,8 @@ namespace mc68k
 	{
 		PeripheralBase::write16(_addr, _val);
 
+		LOG("write16 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(_val,4));
+
 		switch (_addr)
 		{
 		case PeriphAddress::Syncr:
@@ -101,8 +108,41 @@ namespace mc68k
 		case PeriphAddress::Pitr:
 			initTimer();
 			return;
+		case PeriphAddress::Cspar0:
+			logChipSelectPinAssignments(_val, 0, 7);
+			break;
+		case PeriphAddress::Cspar1:
+			logChipSelectPinAssignments(_val, 7, 5);
+			break;
+		case PeriphAddress::Csbarbt:
+		case PeriphAddress::Csbar0:
+		case PeriphAddress::Csbar1:
+		case PeriphAddress::Csbar2:
+		case PeriphAddress::Csbar3:
+		case PeriphAddress::Csbar4:
+		case PeriphAddress::Csbar5:
+		case PeriphAddress::Csbar6:
+		case PeriphAddress::Csbar7:
+		case PeriphAddress::Csbar8:
+		case PeriphAddress::Csbar9:
+		case PeriphAddress::Csbar10:
+			logChipSelectBaseAddressRegister((static_cast<uint32_t>(_addr) - static_cast<uint32_t>(PeriphAddress::Csbarbt)) >> 2, _val);
+			break;
+		case PeriphAddress::Csorbt:
+		case PeriphAddress::Csor0:
+		case PeriphAddress::Csor1:
+		case PeriphAddress::Csor2:
+		case PeriphAddress::Csor3:
+		case PeriphAddress::Csor4:
+		case PeriphAddress::Csor5:
+		case PeriphAddress::Csor6:
+		case PeriphAddress::Csor7:
+		case PeriphAddress::Csor8:
+		case PeriphAddress::Csor9:
+		case PeriphAddress::Csor10:
+			logChipSelectOptionRegister((static_cast<uint32_t>(_addr) - static_cast<uint32_t>(PeriphAddress::Csorbt)) >> 2, _val);
+			break;
 		}
-		LOG("write16 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(_val,4));
 	}
 
 	void Sim::exec(const uint32_t _deltaCycles)
@@ -160,5 +200,102 @@ namespace mc68k
 		m_systemClockHz = hz;
 
 		initTimer();
+	}
+
+	void Sim::logChipSelectPinAssignments(uint16_t _val, int _index, int _count)
+	{
+		for(int i=0; i<_count; ++i)
+		{
+			const auto v = (_val >> (i<<1) & 0x3);
+			const auto idx = i + _index;
+
+			const char* name = g_csParFields[idx];
+			const char* out = nullptr;
+
+			switch (v)
+			{
+			case 0:		out = g_csParDiscretes[idx];	break;
+			case 1:		out = g_csParAlternates[idx];	break;
+			case 2:
+			case 3:		out = g_csParSignals[idx];		break;
+			}
+			LOG("CSPAR" << ((idx < 7) ? "0" : "1") << ": " << name << " = " << out);
+		}
+	}
+
+	void Sim::logChipSelectBaseAddressRegister(const uint32_t _index, uint16_t _val)
+	{
+		const auto baseAddr = (_val & ~7) << 8;
+		uint32_t bs = 0;
+		switch (_val & 7)
+		{
+		case 0b000:	bs = 2 * 1024;		break;
+		case 0b001:	bs = 8 * 1024;		break;
+		case 0b010:	bs = 16 * 1024;		break;
+		case 0b011:	bs = 64 * 1024;		break;
+		case 0b100:	bs = 128 * 1024;	break;
+		case 0b101:	bs = 256 * 1024;	break;
+		case 0b110:	bs = 512 * 1024;	break;
+		case 0b111:	bs = 1024 * 1024;	break;
+		}
+
+		LOG("CSBAR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ", baseAddr=$" << HEXN(baseAddr, 1) << ", blockSize=$" << HEXN(bs, 1));
+	}
+
+	void Sim::logChipSelectOptionRegister(uint32_t _index, uint16_t _val)
+	{
+		const auto avec = _val & 1;
+		const auto ipl = (_val >> 1) & 7;
+		const auto space = (_val >> 4) & 3;
+		const auto dsack = (_val >> 6) & 15;
+		const auto strb = (_val >> 10) & 1;
+		const auto rw = (_val >> 11) & 3;
+		const auto byte = (_val >> 13) & 3;
+		const auto mode = (_val >> 15) & 1;
+
+		const char* sAvec = avec ? "On" : "Off";
+		const std::string sIpl = ipl ? "Priority " + std::to_string(ipl) : "All";
+
+		const char* sSpace = "";
+		switch (space)
+		{
+		case 0:	sSpace = "CPU SP";	break;
+		case 1:	sSpace = "User SP";	break;
+		case 2:	sSpace = "Supv SP";	break;
+		case 3:	sSpace = "S/U SP";	break;
+		}
+
+		std::string sDsack;
+
+		switch (dsack)
+		{
+		case 0b1110:	sDsack = "F term";		break;
+		case 0b1111:	sDsack = "External";	break;
+		default:		sDsack = std::to_string(dsack) + " Wait";
+		}
+
+		const char* sStrb = strb ? "DS" : "AS";
+
+		const char* sRw = "";
+		switch (rw)
+		{
+		case 0: sRw = "Reserved";	break;
+		case 1: sRw = "Read";	break;
+		case 2: sRw = "Write";	break;
+		case 3: sRw = "R&W";	break;
+		}
+
+		const char* sByte = "";
+		switch (byte)
+		{
+		case 0:	sByte = "Disable";	break;
+		case 1:	sByte = "Lower";	break;
+		case 2:	sByte = "Upper";	break;
+		case 3:	sByte = "Both";		break;
+		}
+
+		const char* sMode = mode ? "Sync" : "Async";
+
+		LOG("CSOR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ": AVEC=" << sAvec << ", IPL=" << sIpl << ", SPACE=" << sSpace << ", DSACK=" << sDsack << ", STRB=" << sStrb << ", R/W=" << sRw << ", BYTE=" << sByte << ", MODE=" << sMode);
 	}
 }

@@ -43,6 +43,10 @@ namespace mc68k
 		void initTimer();
 		void updateClock();
 
+		static void logChipSelectPinAssignments(uint16_t _val, int _index, int _count);
+		static void logChipSelectBaseAddressRegister(uint32_t _index, uint16_t _val);
+		static void logChipSelectOptionRegister(uint32_t _index, uint16_t _val);
+
 		Mc68k& m_mc68k;
 		int32_t m_timerLoadValue = 0;
 		int32_t m_timerCurrentValue = 0;
