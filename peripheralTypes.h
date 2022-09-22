@@ -47,6 +47,34 @@ namespace mc68k
 		Picr			= 0xFFA22,	// $YFFA22 Periodic Interrupt Control Register
 		Pitr			= 0xFFA24,	// $YFFA24 Periodic Interrupt Timer Register
 
+		Cspar0			= 0xFFA44,	// $YFFA44 Chip Select Pin Assignment Register 0
+		Cspar1			= 0xFFA46,	// $YFFA46 Chip Select Pin Assignment Register 1
+		Csbarbt			= 0xFFA48,	// $YFFA48 Chip Select Base Address Register Boot ROM
+		Csorbt			= 0xFFA4A,	// $YFFA4A Chip Select Option Register Boot ROM
+
+		Csbar0			= 0xFFA4C,	// $YFFA4C Chip Select Base Address Register 0
+		Csor0			= 0xFFA4E,	// $YFFA4E Chip Select Option Register 0
+		Csbar1			= 0xFFA50,	// $YFFA50 Chip Select Base Address Register 1
+		Csor1			= 0xFFA52,	// $YFFA52 Chip Select Option Register 1
+		Csbar2			= 0xFFA54,	// $YFFA54 Chip Select Base Address Register 2
+		Csor2			= 0xFFA56,	// $YFFA56 Chip Select Option Register 2
+		Csbar3			= 0xFFA58,	// $YFFA58 Chip Select Base Address Register 3
+		Csor3			= 0xFFA5A,	// $YFFA5A Chip Select Option Register 3
+		Csbar4			= 0xFFA5C,	// $YFFA5C Chip Select Base Address Register 4
+		Csor4			= 0xFFA5E,	// $YFFA5E Chip Select Option Register 4
+		Csbar5			= 0xFFA60,	// $YFFA60 Chip Select Base Address Register 5
+		Csor5			= 0xFFA62,	// $YFFA62 Chip Select Option Register 5
+		Csbar6			= 0xFFA64,	// $YFFA64 Chip Select Base Address Register 6
+		Csor6			= 0xFFA66,	// $YFFA66 Chip Select Option Register 6
+		Csbar7			= 0xFFA68,	// $YFFA68 Chip Select Base Address Register 7
+		Csor7			= 0xFFA6A,	// $YFFA6A Chip Select Option Register 7
+		Csbar8			= 0xFFA6C,	// $YFFA6C Chip Select Base Address Register 8
+		Csor8			= 0xFFA6E,	// $YFFA6E Chip Select Option Register 8
+		Csbar9			= 0xFFA70,	// $YFFA70 Chip Select Base Address Register 9
+		Csor9			= 0xFFA72,	// $YFFA72 Chip Select Option Register 9
+		Csbar10			= 0xFFA74,	// $YFFA74 Chip Select Base Address Register 10
+		Csor10			= 0xFFA76,	// $YFFA76 Chip Select Option Register 10
+
 		// QSM
 		Qsmcr			= 0xffc00,	// $YFFC00 QSM Configuration Register
 		Qtest			= 0xffc02,	// $YFFC02 QSM Test Register
