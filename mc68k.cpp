@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <atomic>
+#include <fstream>
 
 #include "logging.h"
 
@@ -265,6 +266,27 @@ namespace mc68k
 	CpuState* Mc68k::getCpuState()
 	{
 		return m_cpuState;
+	}
+
+	bool Mc68k::dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count)
+	{
+		std::ofstream f(_filename, std::ios::out);
+
+		if(!f.is_open())
+			return false;
+
+		for(uint32_t i=_first; i<_first + _count;)
+		{
+			char disasm[64];
+			const auto opSize = disassemble(i, disasm);
+			f << HEXN(i,6) << ": " << disasm << std::endl;
+			if(!opSize)
+				++i;
+			else
+				i += opSize;
+		}
+		f.close();
+		return true;
 	}
 
 	void Mc68k::raiseIPL()

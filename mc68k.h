@@ -87,6 +87,8 @@ namespace mc68k
 
 		CpuState* getCpuState();
 
+		bool dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count);
+
 	private:
 		void raiseIPL();
 
