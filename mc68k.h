@@ -89,6 +89,8 @@ namespace mc68k
 
 		bool dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count);
 
+		bool isInPeripheralRange(uint32_t _addr) const;
+
 	private:
 		void raiseIPL();
 

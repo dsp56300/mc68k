@@ -289,6 +289,13 @@ namespace mc68k
 		return true;
 	}
 
+	bool Mc68k::isInPeripheralRange(uint32_t _addr) const
+	{
+		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
+
+		return m_gpt.isInRange(addr) || m_sim.isInRange(addr) || m_qsm.isInRange(addr) || m_hdi08.isInRange(addr);
+	}
+
 	void Mc68k::raiseIPL()
 	{
 		for(int i=static_cast<int>(m_pendingInterrupts.size())-1; i>0; --i)
