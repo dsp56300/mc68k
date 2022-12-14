@@ -207,7 +207,7 @@ namespace mc68k
 		}
 
 		// SCI
-		if(m_sciRxData.empty())
+		if(m_sciRxDataEmpty)
 			return;
 
 		if(!bitTest(Sccr1Bits::ReceiverEnable))
@@ -228,11 +228,14 @@ namespace mc68k
 
 	void Qsm::writeSciRX(uint16_t _data)
 	{
+		std::lock_guard lock(m_mutexSciRx);
 		m_sciRxData.push_back(_data);
+		m_sciRxDataEmpty = false;
 	}
 
 	void Qsm::readSciTX(std::deque<uint16_t>& _dst)
 	{
+		std::lock_guard lock(m_mutexSciTx);
 		m_sciTxData.swap(_dst);
 		m_sciTxData.clear();
 	}
@@ -333,6 +336,8 @@ namespace mc68k
 
 	uint16_t Qsm::readSciRX()
 	{
+		std::lock_guard lock(m_mutexSciRx);
+
 		if(m_sciRxData.empty())
 		{
 //			LOG("Empty SCI read");
@@ -342,6 +347,7 @@ namespace mc68k
 		clear(ScsrBits::ReceiveDataRegisterFull);
 		const auto res = m_sciRxData.front();
 		m_sciRxData.pop_front();
+		m_sciRxDataEmpty = m_sciRxData.empty();
 		return res;
 	}
 
@@ -398,7 +404,10 @@ namespace mc68k
 		if(!bitTest(Sccr1Bits::TransmitterEnable))
 			return;
 
-		m_sciTxData.push_back(_data);
+		{
+			std::lock_guard lock(m_mutexSciTx);
+			m_sciTxData.push_back(_data);
+		}
 		m_pendingTxDataCounter = 2;
 	}
 

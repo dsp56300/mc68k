@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <mutex>
 
 #include "peripheralBase.h"
 #include "peripheralTypes.h"
@@ -97,8 +98,14 @@ namespace mc68k
 		uint8_t m_nextQueue = 0xff;
 		uint32_t m_spiDelay = 0;
 		std::deque<uint16_t> m_spiTxData;
+
+		std::mutex m_mutexSciTx;
 		std::deque<uint16_t> m_sciTxData;
+
+		std::mutex m_mutexSciRx;
 		std::deque<uint16_t> m_sciRxData;
+		bool m_sciRxDataEmpty = true;
+
 		uint16_t m_pendingTxDataCounter = 0;
 	};
 }
