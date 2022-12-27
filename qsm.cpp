@@ -23,6 +23,8 @@ namespace mc68k
 	constexpr uint16_t g_spsr_spifMask		= (1<<7);
 	constexpr uint16_t g_spsr_haltAckMask	= (1<<5);
 
+	constexpr uint32_t g_sciRxDelay = 200;
+
 	Qsm::Qsm(Mc68k& _mc68k) : m_mc68k(_mc68k), m_qspi(*this)
 	{
 		write16(PeriphAddress::Spcr1, 0b0000010000000100);
@@ -207,6 +209,12 @@ namespace mc68k
 		}
 
 		// SCI
+		if(m_sciRxDelay > 0)
+		{
+			--m_sciRxDelay;
+			return;
+		}
+
 		if(m_sciRxDataEmpty)
 			return;
 
@@ -348,6 +356,7 @@ namespace mc68k
 		const auto res = m_sciRxData.front();
 		m_sciRxData.pop_front();
 		m_sciRxDataEmpty = m_sciRxData.empty();
+		m_sciRxDelay = g_sciRxDelay;
 		return res;
 	}
 
