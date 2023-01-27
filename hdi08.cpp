@@ -157,7 +157,7 @@ namespace mc68k
 
 	bool Hdi08::canReceiveData()
 	{
-		return (isr() & Rxdf) == 0;
+		return (PeripheralBase::read8(PeriphAddress::HdiISR) & Rxdf) == 0;
 	}
 
 	void Hdi08::setWriteTxCallback(const CallbackWriteTx& _writeTxCallback)
