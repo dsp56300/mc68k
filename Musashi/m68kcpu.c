@@ -972,7 +972,9 @@ int m68k_execute(m68ki_cpu_core* m68ki_cpu, int num_cycles)
 		/* Main loop.  Keep going until we run out of clock cycles */
 		do
 		{
+#if M68K_SUPPORT_BUS_ERROR
 			int i;
+#endif
 			/* Set tracing accodring to T1. (T0 is done inside instruction) */
 			m68ki_trace_t1(); /* auto-disable (see m68kcpu.h) */
 
