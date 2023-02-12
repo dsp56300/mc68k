@@ -22,6 +22,28 @@ mc68k::Mc68k* getInstance(m68ki_cpu_core* _core)
 
 extern "C"
 {
+	unsigned int m68k_read_immediate_16(m68ki_cpu_core* core, unsigned int address)
+	{
+		return getInstance(core)->readImm16(address);
+	}
+	unsigned int m68k_read_immediate_32(m68ki_cpu_core* core, unsigned int address)
+	{
+		return getInstance(core)->readImm32(address);
+	}
+
+	unsigned int m68k_read_pcrelative_8(m68ki_cpu_core* core, unsigned int address)
+	{
+		return getInstance(core)->read8(address);
+	}
+	unsigned int m68k_read_pcrelative_16(m68ki_cpu_core* core, unsigned int address)
+	{
+		return getInstance(core)->read16(address);
+	}
+	unsigned int m68k_read_pcrelative_32(m68ki_cpu_core* core, unsigned int address)
+	{
+		return getInstance(core)->read32(address);
+	}
+
 	unsigned int m68k_read_memory_8(m68ki_cpu_core* core, unsigned int address)
 	{
 		return getInstance(core)->read8(address);
@@ -102,7 +124,6 @@ namespace mc68k
 		m68k_set_int_ack_callback(getCpuState(), m68k_int_ack);
 		m68k_set_illg_instr_callback(getCpuState(), m68k_illegal_cbk);
 		m68k_set_reset_instr_callback(getCpuState(), m68k_reset_cbk);
-		m68k_pulse_reset(getCpuState());
 	}
 	Mc68k::~Mc68k()
 	{
@@ -220,6 +241,13 @@ namespace mc68k
 	{
 		write16(_addr, _val >> 16);
 		write16(_addr + 2, _val & 0xffff);
+	}
+
+	uint32_t Mc68k::readImm32(uint32_t _addr)
+	{
+		uint32_t res = static_cast<uint32_t>(readImm16(_addr)) << 16;
+		res |= readImm16(_addr + 2);
+		return res;
 	}
 
 	uint32_t Mc68k::readIrqUserVector(const uint8_t _level)

@@ -897,9 +897,9 @@ extern jmp_buf m68ki_aerr_trap;
 #endif
 
 /* Map PC-relative reads */
-#define m68ki_read_pcrel_8(A) m68k_read_pcrelative_8(A)
-#define m68ki_read_pcrel_16(A) m68k_read_pcrelative_16(A)
-#define m68ki_read_pcrel_32(A) m68k_read_pcrelative_32(A)
+#define m68ki_read_pcrel_8(CPU, A) m68k_read_pcrelative_8(CPU, A)
+#define m68ki_read_pcrel_16(CPU, A) m68k_read_pcrelative_16(CPU, A)
+#define m68ki_read_pcrel_32(CPU, A) m68k_read_pcrelative_32(CPU, A)
 
 /* Read from the program space */
 #define m68ki_read_program_8(A) 	m68ki_read_8_fc(m68ki_cpu, A, FLAG_S | FUNCTION_CODE_USER_PROGRAM)
@@ -1068,7 +1068,7 @@ static inline uint m68ki_read_imm_16(m68ki_cpu_core* m68ki_cpu)
 }
 #else
 	REG_PC += 2;
-	return m68k_read_immediate_16(ADDRESS_68K(REG_PC-2));
+	return m68k_read_immediate_16(m68ki_cpu, ADDRESS_68K(REG_PC-2));
 #endif /* M68K_EMULATE_PREFETCH */
 }
 
@@ -1113,7 +1113,7 @@ static inline uint m68ki_read_imm_32(m68ki_cpu_core* m68ki_cpu)
 	m68ki_set_fc(FLAG_S | FUNCTION_CODE_USER_PROGRAM); /* auto-disable (see m68kcpu.h) */
 	m68ki_check_address_error(REG_PC, MODE_READ, FLAG_S | FUNCTION_CODE_USER_PROGRAM); /* auto-disable (see m68kcpu.h) */
 	REG_PC += 4;
-	return m68k_read_immediate_32(ADDRESS_68K(REG_PC-4));
+	return m68k_read_immediate_32(m68ki_cpu, ADDRESS_68K(REG_PC-4));
 #endif /* M68K_EMULATE_PREFETCH */
 }
 
@@ -1394,12 +1394,12 @@ static inline uint OPER_AW_32(m68ki_cpu_core* m68ki_cpu)    {uint ea = EA_AW_32(
 static inline uint OPER_AL_8(m68ki_cpu_core* m68ki_cpu)     {uint ea = EA_AL_8();     return m68ki_read_8(ea); }
 static inline uint OPER_AL_16(m68ki_cpu_core* m68ki_cpu)    {uint ea = EA_AL_16();    return m68ki_read_16(ea);}
 static inline uint OPER_AL_32(m68ki_cpu_core* m68ki_cpu)    {uint ea = EA_AL_32();    return m68ki_read_32(ea);}
-static inline uint OPER_PCDI_8(m68ki_cpu_core* m68ki_cpu)   {uint ea = EA_PCDI_8();   return m68ki_read_pcrel_8(ea); }
-static inline uint OPER_PCDI_16(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCDI_16();  return m68ki_read_pcrel_16(ea);}
-static inline uint OPER_PCDI_32(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCDI_32();  return m68ki_read_pcrel_32(ea);}
-static inline uint OPER_PCIX_8(m68ki_cpu_core* m68ki_cpu)   {uint ea = EA_PCIX_8();   return m68ki_read_pcrel_8(ea); }
-static inline uint OPER_PCIX_16(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCIX_16();  return m68ki_read_pcrel_16(ea);}
-static inline uint OPER_PCIX_32(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCIX_32();  return m68ki_read_pcrel_32(ea);}
+static inline uint OPER_PCDI_8(m68ki_cpu_core* m68ki_cpu)   {uint ea = EA_PCDI_8();   return m68ki_read_pcrel_8(m68ki_cpu, ea); }
+static inline uint OPER_PCDI_16(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCDI_16();  return m68ki_read_pcrel_16(m68ki_cpu, ea);}
+static inline uint OPER_PCDI_32(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCDI_32();  return m68ki_read_pcrel_32(m68ki_cpu, ea);}
+static inline uint OPER_PCIX_8(m68ki_cpu_core* m68ki_cpu)   {uint ea = EA_PCIX_8();   return m68ki_read_pcrel_8(m68ki_cpu, ea); }
+static inline uint OPER_PCIX_16(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCIX_16();  return m68ki_read_pcrel_16(m68ki_cpu, ea);}
+static inline uint OPER_PCIX_32(m68ki_cpu_core* m68ki_cpu)  {uint ea = EA_PCIX_32();  return m68ki_read_pcrel_32(m68ki_cpu, ea);}
 
 
 

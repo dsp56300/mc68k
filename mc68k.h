@@ -53,6 +53,9 @@ namespace mc68k
 		virtual void write16(uint32_t _addr, uint16_t _val);
 		virtual void write32(uint32_t _addr, uint32_t _val);
 
+		virtual uint16_t readImm16(uint32_t _addr) = 0;
+		uint32_t readImm32(uint32_t _addr);
+
 		uint32_t readIrqUserVector(uint8_t _level);
 
 		void reset();

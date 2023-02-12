@@ -9874,8 +9874,8 @@ static void m68k_op_chk2cmp2_8_pcdi(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15]&0xff;
 		uint ea = EA_PCDI_8();
-		uint lower_bound = m68ki_read_pcrel_8(ea);
-		uint upper_bound = m68ki_read_pcrel_8(ea + 1);
+		uint lower_bound = m68ki_read_pcrel_8(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_8(m68ki_cpu, ea + 1);
 
 		if(!BIT_F(word2))
 			FLAG_C = MAKE_INT_8(compare) - MAKE_INT_8(lower_bound);
@@ -9905,8 +9905,8 @@ static void m68k_op_chk2cmp2_8_pcix(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15]&0xff;
 		uint ea = EA_PCIX_8();
-		uint lower_bound = m68ki_read_pcrel_8(ea);
-		uint upper_bound = m68ki_read_pcrel_8(ea + 1);
+		uint lower_bound = m68ki_read_pcrel_8(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_8(m68ki_cpu, ea + 1);
 
 		if(!BIT_F(word2))
 			FLAG_C = MAKE_INT_8(compare) - MAKE_INT_8(lower_bound);
@@ -10091,8 +10091,8 @@ static void m68k_op_chk2cmp2_16_pcdi(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15]&0xffff;
 		uint ea = EA_PCDI_16();
-		uint lower_bound = m68ki_read_pcrel_16(ea);
-		uint upper_bound = m68ki_read_pcrel_16(ea + 2);
+		uint lower_bound = m68ki_read_pcrel_16(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_16(m68ki_cpu, ea + 2);
 
 		if(!BIT_F(word2))
 			FLAG_C = MAKE_INT_16(compare) - MAKE_INT_16(lower_bound);
@@ -10127,8 +10127,8 @@ static void m68k_op_chk2cmp2_16_pcix(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15]&0xffff;
 		uint ea = EA_PCIX_16();
-		uint lower_bound = m68ki_read_pcrel_16(ea);
-		uint upper_bound = m68ki_read_pcrel_16(ea + 2);
+		uint lower_bound = m68ki_read_pcrel_16(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_16(m68ki_cpu, ea + 2);
 
 		if(!BIT_F(word2))
 			FLAG_C = MAKE_INT_16(compare) - MAKE_INT_16(lower_bound);
@@ -10348,8 +10348,8 @@ static void m68k_op_chk2cmp2_32_pcdi(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15];
 		uint ea = EA_PCDI_32();
-		uint lower_bound = m68ki_read_pcrel_32(ea);
-		uint upper_bound = m68ki_read_pcrel_32(ea + 4);
+		uint lower_bound = m68ki_read_pcrel_32(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_32(m68ki_cpu, ea + 4);
 
 		FLAG_C = compare - lower_bound;
 		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
@@ -10378,8 +10378,8 @@ static void m68k_op_chk2cmp2_32_pcix(m68ki_cpu_core* m68ki_cpu)
 		uint word2 = OPER_I_16();
 		uint compare = REG_DA[(word2 >> 12) & 15];
 		uint ea = EA_PCIX_32();
-		uint lower_bound = m68ki_read_pcrel_32(ea);
-		uint upper_bound = m68ki_read_pcrel_32(ea + 4);
+		uint lower_bound = m68ki_read_pcrel_32(m68ki_cpu, ea);
+		uint upper_bound = m68ki_read_pcrel_32(m68ki_cpu, ea + 4);
 
 		FLAG_C = compare - lower_bound;
 		FLAG_Z = !((upper_bound==compare) | (lower_bound==compare));
@@ -22811,7 +22811,7 @@ static void m68k_op_movem_16_er_pcdi(m68ki_cpu_core* m68ki_cpu)
 	for(; i < 16; i++)
 		if(register_list & (1 << i))
 		{
-			REG_DA[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
+			REG_DA[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(m68ki_cpu, ea)));
 			ea += 2;
 			count++;
 		}
@@ -22830,7 +22830,7 @@ static void m68k_op_movem_16_er_pcix(m68ki_cpu_core* m68ki_cpu)
 	for(; i < 16; i++)
 		if(register_list & (1 << i))
 		{
-			REG_DA[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(ea)));
+			REG_DA[i] = MAKE_INT_16(MASK_OUT_ABOVE_16(m68ki_read_pcrel_16(m68ki_cpu, ea)));
 			ea += 2;
 			count++;
 		}
@@ -22964,7 +22964,7 @@ static void m68k_op_movem_32_er_pcdi(m68ki_cpu_core* m68ki_cpu)
 	for(; i < 16; i++)
 		if(register_list & (1 << i))
 		{
-			REG_DA[i] = m68ki_read_pcrel_32(ea);
+			REG_DA[i] = m68ki_read_pcrel_32(m68ki_cpu, ea);
 			ea += 4;
 			count++;
 		}
@@ -22983,7 +22983,7 @@ static void m68k_op_movem_32_er_pcix(m68ki_cpu_core* m68ki_cpu)
 	for(; i < 16; i++)
 		if(register_list & (1 << i))
 		{
-			REG_DA[i] = m68ki_read_pcrel_32(ea);
+			REG_DA[i] = m68ki_read_pcrel_32(m68ki_cpu, ea);
 			ea += 4;
 			count++;
 		}
