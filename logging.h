@@ -11,7 +11,7 @@ namespace mc68k
 
 #define LOG(S)																												\
 {																															\
-	std::stringstream _ss_logging_cpp;	_ss_logging_cpp << __FUNCTION__ << "@" << __LINE__ << ": " << S;					\
+	std::stringstream _ss_logging_cpp;	_ss_logging_cpp << __func__ << "@" << __LINE__ << ": " << S;						\
 																															\
 	mc68k::logToConsole(_ss_logging_cpp.str());																				\
 }
