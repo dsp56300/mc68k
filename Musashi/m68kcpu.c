@@ -612,9 +612,9 @@ static void default_instr_hook_callback(m68ki_cpu_core* m68ki_cpu, unsigned int 
 /* ======================================================================== */
 
 /* Access the internals of the CPU */
-unsigned int m68k_get_reg(void* context, m68k_register_t regnum)
+unsigned int m68k_get_reg(const void* context, m68k_register_t regnum)
 {
-	m68ki_cpu_core* cpu = (m68ki_cpu_core*)context;
+	const m68ki_cpu_core* cpu = (const m68ki_cpu_core*)context;
 
 	switch(regnum)
 	{

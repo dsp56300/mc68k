@@ -276,7 +276,7 @@ namespace mc68k
 		m68k_set_reg(getCpuState(), M68K_REG_PC, _pc);
 	}
 
-	uint32_t Mc68k::getPC()
+	uint32_t Mc68k::getPC() const
 	{
 		return m68k_get_reg(getCpuState(), M68K_REG_PC);
 	}
@@ -292,6 +292,11 @@ namespace mc68k
 	}
 
 	CpuState* Mc68k::getCpuState()
+	{
+		return m_cpuState;
+	}
+
+	const CpuState* Mc68k::getCpuState() const
 	{
 		return m_cpuState;
 	}

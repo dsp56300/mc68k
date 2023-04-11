@@ -373,7 +373,7 @@ void m68k_state_register(const char *type, int index);
  * retrieved using m68k_get_context() or the currently running context.
  * If context is NULL, the currently running CPU context will be used.
  */
-unsigned int m68k_get_reg(void* context, m68k_register_t reg);
+unsigned int m68k_get_reg(const void* context, m68k_register_t reg);
 
 /* Poke values into the internals of the currently running CPU context */
 void m68k_set_reg(m68ki_cpu_core* m68ki_cpu, m68k_register_t reg, unsigned int value);

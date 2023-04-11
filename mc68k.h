@@ -60,7 +60,7 @@ namespace mc68k
 
 		void reset();
 		void setPC(uint32_t _pc);
-		uint32_t getPC();
+		uint32_t getPC() const;
 		virtual uint32_t getResetPC() { return 0; }
 		virtual uint32_t getResetSP() { return 0; }
 
@@ -89,6 +89,7 @@ namespace mc68k
 		}
 
 		CpuState* getCpuState();
+		const CpuState* getCpuState() const;
 
 		bool dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count);
 
