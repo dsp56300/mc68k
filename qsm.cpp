@@ -23,7 +23,7 @@ namespace mc68k
 	constexpr uint16_t g_spsr_spifMask		= (1<<7);
 	constexpr uint16_t g_spsr_haltAckMask	= (1<<5);
 
-	constexpr uint32_t g_sciRxDelay = 200;
+	constexpr uint32_t g_sciRxDelay = 50;
 
 	Qsm::Qsm(Mc68k& _mc68k) : m_mc68k(_mc68k), m_qspi(*this)
 	{
