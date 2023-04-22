@@ -26,7 +26,7 @@ set(SOURCES_MUSASHI
 
 set(SOURCES
 	gpt.cpp gpt.h
-	hdi08.cpp hdi08.inl hdi08.h
+	hdi08.cpp hdi08.h
 	logging.cpp logging.h
 	mc68k.cpp mc68k.h
 	peripheralBase.cpp peripheralBase.h
