@@ -26,7 +26,7 @@ namespace mc68k
 			r |= (1<<3);	// code waits until frequency has locked in, yes it has
 			return r;
 		default:
-			LOG("read16 addr=" << HEXN(_addr, 8));
+			MCLOG("read16 addr=" << MCHEXN(_addr, 8));
 			return r;
 		}
 	}
@@ -44,7 +44,7 @@ namespace mc68k
 		case PeriphAddress::PortF1:
 			return m_portF.read();
 		default:
-			LOG("read16 addr=" << HEXN(_addr, 8));
+			MCLOG("read16 addr=" << MCHEXN(_addr, 8));
 			return r;
 		}
 	}
@@ -59,29 +59,29 @@ namespace mc68k
 			updateClock();
 			return;
 		case PeriphAddress::DdrE:
-			LOG("Port E direction set to " << HEXN(_val, 2));
+			MCLOG("Port E direction set to " << MCHEXN(_val, 2));
 			m_portE.setDirection(_val);
 			return;
 		case PeriphAddress::DdrF:
-			LOG("Port F direction set to " << HEXN(_val, 2));
+			MCLOG("Port F direction set to " << MCHEXN(_val, 2));
 			m_portF.setDirection(_val);
 			return;
 		case PeriphAddress::PEPar:
-			LOG("Port E Pin assignment set to " << HEXN(_val, 2));
+			MCLOG("Port E Pin assignment set to " << MCHEXN(_val, 2));
 			m_portE.enablePins(~_val);
 			return;
 		case PeriphAddress::PFPar:
-			LOG("Port F Pin assignment set to " << HEXN(_val, 2));
+			MCLOG("Port F Pin assignment set to " << MCHEXN(_val, 2));
 			m_portF.enablePins(~_val);
 			return;
 		case PeriphAddress::PortE0:
 		case PeriphAddress::PortE1:
-//			LOG("Port E write: " << HEXN(_val, 2));
+//			MCLOG("Port E write: " << MCHEXN(_val, 2));
 			m_portE.writeTX(_val);
 			return;
 		case PeriphAddress::PortF0:
 		case PeriphAddress::PortF1:
-//			LOG("Port F write: " << HEXN(_val, 2));
+//			MCLOG("Port F write: " << MCHEXN(_val, 2));
 			m_portF.writeTX(_val);
 			return;
 		case PeriphAddress::Picr:
@@ -90,14 +90,14 @@ namespace mc68k
 			return;
 		}
 
-		LOG("write8 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(static_cast<int>(_val),2));
+		MCLOG("write8 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(static_cast<int>(_val),2));
 	}
 
 	void Sim::write16(PeriphAddress _addr, uint16_t _val)
 	{
 		PeripheralBase::write16(_addr, _val);
 
-		LOG("write16 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(_val,4));
+		MCLOG("write16 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(_val,4));
 
 		switch (_addr)
 		{
@@ -195,7 +195,7 @@ namespace mc68k
 
 		const float mhz = static_cast<float>(hz) / 1000000.0f;
 
-		LOG("Fsys=" << hz << "Hz / " << mhz << "MHz, Fext=" << m_externalClockHz << "Hz, SYNCR=$" << HEXN(syncr,4) << ", W=" << w << ", X=" << x << ", Y=" << y );
+		MCLOG("Fsys=" << hz << "Hz / " << mhz << "MHz, Fext=" << m_externalClockHz << "Hz, SYNCR=$" << MCHEXN(syncr,4) << ", W=" << w << ", X=" << x << ", Y=" << y );
 
 		m_systemClockHz = hz;
 
@@ -219,7 +219,7 @@ namespace mc68k
 			case 2:
 			case 3:		out = g_csParSignals[idx];		break;
 			}
-			LOG("CSPAR" << ((idx < 7) ? "0" : "1") << ": " << name << " = " << out);
+			MCLOG("CSPAR" << ((idx < 7) ? "0" : "1") << ": " << name << " = " << out);
 		}
 	}
 
@@ -239,7 +239,7 @@ namespace mc68k
 		case 0b111:	bs = 1024 * 1024;	break;
 		}
 
-		LOG("CSBAR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ", baseAddr=$" << HEXN(baseAddr, 1) << ", blockSize=$" << HEXN(bs, 1));
+		MCLOG("CSBAR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ", baseAddr=$" << MCHEXN(baseAddr, 1) << ", blockSize=$" << MCHEXN(bs, 1));
 	}
 
 	void Sim::logChipSelectOptionRegister(uint32_t _index, uint16_t _val)
@@ -296,6 +296,6 @@ namespace mc68k
 
 		const char* sMode = mode ? "Sync" : "Async";
 
-		LOG("CSOR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ": AVEC=" << sAvec << ", IPL=" << sIpl << ", SPACE=" << sSpace << ", DSACK=" << sDsack << ", STRB=" << sStrb << ", R/W=" << sRw << ", BYTE=" << sByte << ", MODE=" << sMode);
+		MCLOG("CSOR" << (_index == 0 ? "BT" : std::to_string(_index-1)) << ": AVEC=" << sAvec << ", IPL=" << sIpl << ", SPACE=" << sSpace << ", DSACK=" << sDsack << ", STRB=" << sStrb << ", R/W=" << sRw << ", BYTE=" << sByte << ", MODE=" << sMode);
 	}
 }

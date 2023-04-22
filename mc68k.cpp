@@ -312,7 +312,7 @@ namespace mc68k
 		{
 			char disasm[64];
 			const auto opSize = disassemble(i, disasm);
-			f << HEXN(i,6) << ": " << disasm << std::endl;
+			f << MCHEXN(i,6) << ": " << disasm << std::endl;
 			if(!opSize)
 				++i;
 			else

@@ -20,7 +20,7 @@ namespace mc68k
 			return;
 		}
 
-		LOG("write8 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(static_cast<int>(_val),2));
+		MCLOG("write8 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(static_cast<int>(_val),2));
 	}
 
 	uint8_t Gpt::read8(PeriphAddress _addr)
@@ -35,7 +35,7 @@ namespace mc68k
 			return static_cast<uint8_t>(read16(PeriphAddress::Tcnt) & 0xff);
 		}
 
-		LOG("read8 addr=" << HEXN(_addr, 8));
+		MCLOG("read8 addr=" << MCHEXN(_addr, 8));
 
 		return PeripheralBase::read8(_addr);
 	}
@@ -51,7 +51,7 @@ namespace mc68k
 			m_portGP.writeTX(_val>>8);
 			break;
 		}
-		LOG("write16 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(_val,4));
+		MCLOG("write16 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(_val,4));
 	}
 
 	uint16_t Gpt::read16(PeriphAddress _addr)
@@ -68,12 +68,12 @@ namespace mc68k
 		case PeriphAddress::Tcnt:
 			{
 				const auto r = (m_mc68k.getCycles() >> 2) & 0xffff;
-				LOG("Read TCNT=" << HEXN(r,4) << " at PC=" << m_mc68k.getPC());
+				MCLOG("Read TCNT=" << MCHEXN(r,4) << " at PC=" << m_mc68k.getPC());
 				return static_cast<uint16_t>(r);
 			}
 		}
 
-		LOG("read16 addr=" << HEXN(_addr, 8));
+		MCLOG("read16 addr=" << MCHEXN(_addr, 8));
 
 		return PeripheralBase::read16(_addr);
 	}

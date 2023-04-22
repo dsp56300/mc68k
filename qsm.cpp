@@ -55,26 +55,26 @@ namespace mc68k
 				spsr(spsr() | g_spsr_haltAckMask);
 			break;
 		case PeriphAddress::Pqspar:
-			LOG("Set PQSPAR to " << HEXN(_val, 4));
+			MCLOG("Set PQSPAR to " << MCHEXN(_val, 4));
 			m_portQS.enablePins(~(_val >> 8));
 			m_portQS.setDirection(_val & 0xff);
 			return;
 		case PeriphAddress::SciControl0:
-			LOG("Set SCCR0 to " << HEXN(_val, 4));
+			MCLOG("Set SCCR0 to " << MCHEXN(_val, 4));
 			return;
 		case PeriphAddress::SciControl1:
-//			LOG("Set SCCR1 to " << HEXN(_val, 4));
+//			MCLOG("Set SCCR1 to " << MCHEXN(_val, 4));
 			if(bitTest(_val, Sccr1Bits::TransmitInterruptEnable) && !bitTest(prev, Sccr1Bits::TransmitInterruptEnable))
 				injectInterrupt(ScsrBits::TransmitDataRegisterEmpty);
 			return;
 		case PeriphAddress::SciStatus:
-			LOG("Set SCSR to " << HEXN(_val, 4));
+			MCLOG("Set SCSR to " << MCHEXN(_val, 4));
 			return;
 		case PeriphAddress::SciData:
 			writeSciData(_val);
 			return;
 		}
-//		LOG("write16 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(_val,4));
+//		MCLOG("write16 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(_val,4));
 	}
 
 	uint16_t Qsm::read16(PeriphAddress _addr)
@@ -92,7 +92,7 @@ namespace mc68k
 			return PeripheralBase::read16(_addr);
 		}
 
-//		LOG("read16 addr=" << HEXN(_addr, 8));
+//		MCLOG("read16 addr=" << MCHEXN(_addr, 8));
 		return PeripheralBase::read16(_addr);
 	}
 
@@ -126,25 +126,25 @@ namespace mc68k
 				spsr(spsr() | g_spsr_haltAckMask);
 			return;
 		case PeriphAddress::Ddrqs:
-			LOG("Set DDRQS to " << HEXN(_val, 2));
+			MCLOG("Set DDRQS to " << MCHEXN(_val, 2));
 			m_portQS.setDirection(_val);
 			return;
 		case PeriphAddress::Pqspar:
-			LOG("Set PQSPAR to " << HEXN(_val, 2));
+			MCLOG("Set PQSPAR to " << MCHEXN(_val, 2));
 			m_portQS.enablePins(~_val);
 			return;
 		case PeriphAddress::Portqs:
-			LOG("Set PortQS to " << HEXN(_val,2));
+			MCLOG("Set PortQS to " << MCHEXN(_val,2));
 			m_portQS.writeTX(_val);
 			return;
 		case PeriphAddress::SciData:
 			writeSciData(_val);
 			return;
 		case PeriphAddress::SciStatus:
-			LOG("Set SCSR to " << HEXN(_val, 2));
+			MCLOG("Set SCSR to " << MCHEXN(_val, 2));
 			return;
 		}
-//		LOG("write8 addr=" << HEXN(_addr, 8) << ", val=" << HEXN(static_cast<int>(_val),2));
+//		MCLOG("write8 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(static_cast<int>(_val),2));
 	}
 
 	uint8_t Qsm::read8(PeriphAddress _addr)
@@ -165,7 +165,7 @@ namespace mc68k
 		case PeriphAddress::Spsr:
 			return PeripheralBase::read8(_addr);
 		}
-//		LOG("read8 addr=" << HEXN(_addr, 8));
+//		MCLOG("read8 addr=" << MCHEXN(_addr, 8));
 		return PeripheralBase::read8(_addr);
 	}
 
@@ -220,7 +220,7 @@ namespace mc68k
 
 		if(!bitTest(Sccr1Bits::ReceiverEnable))
 		{
-//			LOG("Discarding SCI data " << HEXN(m_sciRxData.front(), 4) << ", receiver not enabled");
+//			MCLOG("Discarding SCI data " << MCHEXN(m_sciRxData.front(), 4) << ", receiver not enabled");
 //			m_sciRxData.pop_front();
 			return;
 		}
@@ -348,7 +348,7 @@ namespace mc68k
 
 		if(m_sciRxData.empty())
 		{
-//			LOG("Empty SCI read");
+//			MCLOG("Empty SCI read");
 			return 0;
 		}
 
@@ -426,7 +426,7 @@ namespace mc68k
 		set(ScsrBits::TransmitDataRegisterEmpty);
 		set(ScsrBits::TransmitComplete);
 		const auto r = PeripheralBase::read16(PeriphAddress::SciStatus);
-//		LOG("Read SCSR, res=" << HEXN(r, 4));
+//		MCLOG("Read SCSR, res=" << MCHEXN(r, 4));
 		return r;
 	}
 }
