@@ -16,6 +16,7 @@ namespace mc68k
 	{
 	public:
 		explicit PeripheralBase() : m_buffer{0} {}
+		virtual ~PeripheralBase() = default;
 
 		constexpr bool isInRange(PeriphAddress _addr) const
 		{
@@ -23,19 +24,19 @@ namespace mc68k
 		}
 		virtual uint8_t read8(PeriphAddress _addr)
 		{
-			return m_buffer[static_cast<size_t>(_addr) - Base];
+			return m_buffer[static_cast<uint32_t>(_addr) - Base];
 		}
 		virtual uint16_t read16(PeriphAddress _addr)
 		{
-			return periphBaseReadW(&m_buffer[0], static_cast<size_t>(_addr) - Base);
+			return periphBaseReadW(m_buffer.data(), static_cast<uint32_t>(_addr) - Base);
 		}
 		virtual void write8(PeriphAddress _addr, uint8_t _val)
 		{
-			m_buffer[static_cast<size_t>(_addr) - Base] = _val;
+			m_buffer[static_cast<uint32_t>(_addr) - Base] = _val;
 		}
 		virtual void write16(PeriphAddress _addr, uint16_t _val)
 		{
-			return periphBaseWriteW(&m_buffer[0], static_cast<size_t>(_addr) - Base, _val);
+			return periphBaseWriteW(m_buffer.data(), static_cast<uint32_t>(_addr) - Base, _val);
 		}
 
 		virtual void exec(uint32_t _deltaCycles) {}
