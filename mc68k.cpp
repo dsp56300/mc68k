@@ -139,7 +139,6 @@ namespace mc68k
 		m_gpt.exec(deltaCycles);
 		m_sim.exec(deltaCycles);
 		m_qsm.exec(deltaCycles);
-		m_hdi08.exec(deltaCycles);
 
 		return deltaCycles;
 	}
@@ -188,7 +187,6 @@ namespace mc68k
 		if(m_gpt.isInRange(addr))			return m_gpt.read8(addr);
 		if(m_sim.isInRange(addr))			return m_sim.read8(addr);
 		if(m_qsm.isInRange(addr))			return m_qsm.read8(addr);
-		if(m_hdi08.isInRange(addr))			return m_hdi08.read8(addr);
 
 		return 0;
 	}
@@ -200,7 +198,6 @@ namespace mc68k
 		if(m_gpt.isInRange(addr))			return m_gpt.read16(addr);
 		if(m_sim.isInRange(addr))			return m_sim.read16(addr);
 		if(m_qsm.isInRange(addr))			return m_qsm.read16(addr);
-		if(m_hdi08.isInRange(addr))			return m_hdi08.read16(addr);
 
 		return 0;
 	}
@@ -209,11 +206,6 @@ namespace mc68k
 	{
 		uint32_t res = static_cast<uint32_t>(read16(_addr)) << 16;
 		res |= read16(_addr + 2);
-		return res;
-		if((_addr & 0x0fffff) == static_cast<uint32_t>(PeriphAddress::HdiUnused4))
-		{
-			LOG("HDI readRX=" << HEXN(res, 8));
-		}
 		return res;
 	}
 
@@ -224,7 +216,6 @@ namespace mc68k
 		if(m_gpt.isInRange(addr))			m_gpt.write8(addr, _val);
 		else if(m_sim.isInRange(addr))		m_sim.write8(addr, _val);
 		else if(m_qsm.isInRange(addr))		m_qsm.write8(addr, _val);
-		else if(m_hdi08.isInRange(addr))	m_hdi08.write8(addr, _val);
 	}
 
 	void Mc68k::write16(uint32_t _addr, uint16_t _val)
@@ -234,7 +225,6 @@ namespace mc68k
 		if(m_gpt.isInRange(addr))			m_gpt.write16(addr, _val);
 		else if(m_sim.isInRange(addr))		m_sim.write16(addr, _val);
 		else if(m_qsm.isInRange(addr))		m_qsm.write16(addr, _val);
-		else if(m_hdi08.isInRange(addr))	m_hdi08.write16(addr, _val);
 	}
 
 	void Mc68k::write32(uint32_t _addr, uint32_t _val)
@@ -286,11 +276,6 @@ namespace mc68k
 		return m68k_disassemble(_buffer, _pc, m68k_get_reg(getCpuState(), M68K_REG_CPU_TYPE));
 	}
 
-	Hdi08& Mc68k::hdi08()
-	{
-		return m_hdi08;
-	}
-
 	CpuState* Mc68k::getCpuState()
 	{
 		return m_cpuState;
@@ -320,13 +305,6 @@ namespace mc68k
 		}
 		f.close();
 		return true;
-	}
-
-	bool Mc68k::isInPeripheralRange(uint32_t _addr) const
-	{
-		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
-
-		return m_gpt.isInRange(addr) || m_sim.isInRange(addr) || m_qsm.isInRange(addr) || m_hdi08.isInRange(addr);
 	}
 
 	void Mc68k::raiseIPL()

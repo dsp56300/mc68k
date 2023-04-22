@@ -8,9 +8,22 @@
 
 namespace mc68k
 {
-	class Hdi08 final : public PeripheralBase<g_hdi08Base, g_hdi08Size>
+	template<uint32_t Base, uint32_t Size >
+	class Hdi08 final : public PeripheralBase<Base, Size>
 	{
 	public:
+		enum Address
+		{
+			ICR = Base,			// Interface Control Register (ICR)
+			CVR,				// Command Vector Register (CVR)
+			ISR,				// Interface Status Register (ISR)
+			IVR,				// Interrupt Vector Register (IVR)
+			Unused4,
+			TXH,				// Receive Byte Registers (RXH:RXM:RXL)
+			TXM,				//   or Transmit Byte Registers (TXH:TXM:TXL)
+			TXL,				//   byte order depends on HLEND endianess setting
+		};
+
 		enum IsrBits
 		{
 			Rxdf			= 1<<0,		// ISR Receive Data Register Full (RXDF) Bit 0
@@ -54,10 +67,7 @@ namespace mc68k
 		void write8(PeriphAddress _addr, uint8_t _val) override;
 		void write16(PeriphAddress _addr, uint16_t _val) override;
 
-		void pollTx(std::deque<uint32_t>& _dst)
-		{
-			std::swap(_dst, m_txData);
-		}
+		void pollTx(std::deque<uint32_t>& _dst);
 
 		bool pollInterruptRequest(uint8_t& _addr);
 
@@ -67,7 +77,7 @@ namespace mc68k
 
 		uint8_t isr()
 		{
-			auto isr = m_readIsrCallback(PeripheralBase::read8(PeriphAddress::HdiISR));
+			auto isr = m_readIsrCallback(PeripheralBase<Base, Size>::read8(toPeriphAddress(Address::ISR)));
 
 			// we want new data for transmission
 			isr |= Txde;
@@ -77,11 +87,11 @@ namespace mc68k
 
 		uint8_t icr()
 		{
-			return PeripheralBase::read8(PeriphAddress::HdiICR);
+			return PeripheralBase<Base,Size>::read8(toPeriphAddress(Address::ICR));
 		}
 
-		void isr(uint8_t _isr) { write8(PeriphAddress::HdiISR, _isr); }
-		void icr(uint8_t _icr) { write8(PeriphAddress::HdiICR, _icr); }
+		void isr(const uint8_t _isr) { write8(toPeriphAddress(Address::ISR), _isr); }
+		void icr(const uint8_t _icr) { write8(toPeriphAddress(Address::ICR), _icr); }
 
 		bool canReceiveData();
 
@@ -115,6 +125,16 @@ namespace mc68k
 		uint8_t littleEndian();
 		uint8_t readRX(WordFlags _index);
 		bool pollRx();
+
+		static Address toAddress(PeriphAddress _addr)
+		{
+			return static_cast<Address>(_addr);
+		}
+
+		static PeriphAddress toPeriphAddress(Address _addr)
+		{
+			return static_cast<PeriphAddress>(_addr);
+		}
 
 		WordFlags m_writtenFlags = WordFlags::None;
 		WordFlags m_readFlags = WordFlags::None;
