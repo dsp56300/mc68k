@@ -8,7 +8,7 @@
 
 namespace mc68k
 {
-	class Hdi08 final : public PeripheralBase<g_hdi08Base, g_hdi08Size>
+	class Hdi08 final : public PeripheralBase<0, 8>
 	{
 	public:
 		enum IsrBits

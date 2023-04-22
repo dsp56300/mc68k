@@ -6,27 +6,27 @@ namespace mc68k
 {
 	static constexpr uint32_t g_peripheralMask	= 0xfffff;
 
-	static constexpr uint32_t g_hdi08Base		= 0xfd000;
 	static constexpr uint32_t g_gptBase			= 0xff900;
 	static constexpr uint32_t g_simBase			= 0xffa00;
 	static constexpr uint32_t g_qsmBase			= 0xffc00;
 
-	static constexpr uint32_t g_hdi08Size		= 8;
 	static constexpr uint32_t g_gptSize			= 64;
 	static constexpr uint32_t g_simSize			= 128;
 	static constexpr uint32_t g_qsmSize			= 512;
 
 	enum class PeriphAddress
 	{
-		// HDI08
-		HdiICR			= 0xfd000,	// Interface Control Register (ICR)
-		HdiCVR			= 0xfd001,	// Command Vector Register (CVR)
-		HdiISR			= 0xfd002,	// Interface Status Register (ISR)
-		HdiIVR			= 0xfd003,	// Interrupt Vector Register (IVR)
-		HdiUnused4		= 0xfd004,
-		HdiTXH			= 0xfd005,	// Receive Byte Registers (RXH:RXM:RXL)
-		HdiTXM			= 0xfd006,	//   or Transmit Byte Registers (TXH:TXM:TXL)
-		HdiTXL			= 0xfd007,	//   byte order depends on HLEND endianess setting
+		// HDI08, note that these are dummy addresses that will be remapped
+
+		HdiICR			= 0x00000,	// Interface Control Register (ICR)
+		HdiCVR			= 0x00001,	// Command Vector Register (CVR)
+		HdiISR			= 0x00002,	// Interface Status Register (ISR)
+		HdiIVR			= 0x00003,	// Interrupt Vector Register (IVR)
+		HdiUnused4		= 0x00004,
+		HdiTXH			= 0x00005,	// Receive Byte Registers (RXH:RXM:RXL)
+		HdiTXM			= 0x00006,	//   or Transmit Byte Registers (TXH:TXM:TXL)
+		HdiTXL			= 0x00007,	//   byte order depends on HLEND endianess setting
+		HdiFirst		= HdiICR,
 
 		// GPT
 		DdrGp			= 0xFF906,	// Port GP Data Direction Register $YFF906
