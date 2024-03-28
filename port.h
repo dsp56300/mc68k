@@ -10,7 +10,10 @@ namespace mc68k
 	public:
 		Port();
 
-		uint8_t getDirection() const { return m_direction; }
+		uint8_t getDirection() const
+		{
+			return m_direction;
+		}
 
 		void setDirection(const uint8_t _dir)
 		{
@@ -24,10 +27,20 @@ namespace mc68k
 		void writeTX(uint8_t _data);
 		void writeRX(uint8_t _data);
 
-		uint8_t read() const;
+		uint8_t read() const
+		{
+			return m_data;
+		}
 
-		void enablePins(uint8_t _pins) { m_enabledPins = _pins; }
-		uint32_t getWriteCounter() const { return m_writeCounter; }
+		void enablePins(uint8_t _pins)
+		{
+			m_enabledPins = _pins;
+		}
+
+		uint32_t getWriteCounter() const
+		{
+			return m_writeCounter;
+		}
 
 		uint8_t bittest(uint32_t _bit) const
 		{
@@ -45,6 +58,7 @@ namespace mc68k
 		}
 
 		void setDirectionChangeCallback(const std::function<void(const Port&)>& _func);
+		void setWriteTXCallback(const std::function<void(const Port&)>& _func);
 
 	private:
 		uint8_t m_direction = 0;		// 0 = input, 1 = output
@@ -52,5 +66,6 @@ namespace mc68k
 		uint8_t m_data = 0;
 		uint32_t m_writeCounter = 0;
 		std::function<void(const Port&)> m_dirChangeCallback;
+		std::function<void(const Port&)> m_writeTXCallback;
 	};
 }
