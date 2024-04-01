@@ -29,10 +29,14 @@ namespace mc68k
 		HdiFirst		= HdiICR,
 
 		// GPT
+		Icr				= 0xFF904,	// GPT Interrupt Configuration Register $YFF904
 		DdrGp			= 0xFF906,	// Port GP Data Direction Register $YFF906
 		PortGp			= 0xFF907,	// Port GP Data Register $YFF907
+		Oc1m			= 0xFF908,  // OC1 Action Mask Register $YFF908
+		Oc1d			= 0xFF909,  // OC1 Action Dta Register $YFF909
 		Tcnt			= 0xFF90a,	// Timer Counter
 		TcntLSB			= 0xFF90b,
+		Gptmcr			= 0xFF900,	// GPT Module Configuration Register $YFF900
 
 		// SIM
 		Syncr			= 0xFFA04,	// $YFFA04 CLOCK SYNTHESIZER CONTROL (SYNCR)

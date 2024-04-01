@@ -72,6 +72,7 @@ namespace mc68k
 		Port& getPortGP()	{ return m_gpt.getPortGP(); }
 		Port& getPortQS()	{ return m_qsm.getPortQS(); }
 
+		Gpt& getGPT()		{ return m_gpt; }
 		Qsm& getQSM()		{ return m_qsm; }
 		Sim& getSim()		{ return m_sim; }
 
