@@ -20,6 +20,8 @@ namespace mc68k
 
 		Port& getPortGP() { return m_portGP; }
 
+		void injectInterrupt(uint8_t _vba);
+
 	private:
 		Mc68k& m_mc68k;
 		Port m_portGP;

@@ -77,4 +77,13 @@ namespace mc68k
 
 		return PeripheralBase::read16(_addr);
 	}
+
+	void Gpt::injectInterrupt(uint8_t _vba)
+	{
+		const auto icr = read16(PeriphAddress::Icr);
+		const auto level = (icr>>8) & 3;
+		const auto msb = icr & 0xf0;
+		const auto vba = msb | _vba;
+		m_mc68k.injectInterrupt(static_cast<uint8_t>(vba), static_cast<uint8_t>(level));
+	}
 }
