@@ -87,6 +87,7 @@ namespace mc68k
 		uint16_t readSciRX();
 
 		static PeriphAddress transmitRamAddr(uint8_t _offset);
+		static PeriphAddress receiveRamAddr(uint8_t _offset);
 
 		void writeSciData(uint16_t _data);
 		uint16_t readSciStatus();

@@ -403,9 +403,14 @@ namespace mc68k
 		}
 	}
 
-	PeriphAddress Qsm::transmitRamAddr(uint8_t _offset)
+	PeriphAddress Qsm::transmitRamAddr(const uint8_t _offset)
 	{
 		return static_cast<PeriphAddress>(static_cast<uint32_t>(PeriphAddress::TransmitRam0) + (_offset<<1));
+	}
+
+	PeriphAddress Qsm::receiveRamAddr(const uint8_t _offset)
+	{
+		return static_cast<PeriphAddress>(static_cast<uint32_t>(PeriphAddress::ReceiveRam0) + (_offset<<1));
 	}
 
 	void Qsm::writeSciData(const uint16_t _data)
