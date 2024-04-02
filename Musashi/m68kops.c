@@ -34492,27 +34492,74 @@ static void m68k_op_unpk_16_mm(m68ki_cpu_core* m68ki_cpu)
 
 static void m68k_op_tblu(m68ki_cpu_core* m68ki_cpu)
 {
-	// {m68k_op_tblu, 0xffff, 0xf839, {34, 34, 34, 34} }
-	// F8h 39h 01h 80h|  00h 08h 4Bh E6h or		TBLU effective address=0x39, Dx=0, R=0, size=0
-	// F8h 39h 01h 80h|  00h 08h 4Eh 66h
-	short nextword=OPER_I_16();	// = 0x0180
-	int dx=(nextword>>12)&7;
-	int rounding=(nextword>>10)&1;
-	int size=(nextword>>6)&3;
-	if ((nextword&0x8B3F)!=0x100) {m68ki_exception_illegal(m68ki_cpu); return;}	// this is required.
-	if (size!=2) {m68ki_exception_illegal(m68ki_cpu);return;}	// for now let's handle the .l version we've seen.
-	if (rounding){m68ki_exception_illegal(m68ki_cpu);return;}	// for now let's handle the unrounded version we've seen.
+	short mode = (REG_IR >> 3) & 7;
+	short reg = (REG_IR & 7);
+    // {m68k_op_tblu, 0xffc0, 0xf800, {34, 34, 34, 34} }
+    short nextword=OPER_I_16();
+    int dx=(nextword >> 12) & 7;
+    int issigned=(nextword >> 11) & 1;
+    int rounding=(nextword>>10)&1;
+    int lookup = (nextword >> 8) & 1;
+    int size=(nextword>>6)&3;
+    if (nextword & 0x0238) {m68ki_exception_illegal(m68ki_cpu); return;} // bits 9, 5,4,3 should be zero
+    if (!lookup && mode) {m68ki_exception_illegal(m68ki_cpu); return;} // if lookup is off, mode MUST be zero
+    int rdyn = nextword & 7;
+    if (lookup && rdyn)  {m68ki_exception_illegal(m68ki_cpu); return;} // if lookup is on, rdyn must be zero
+	if (size == 3) {m68ki_exception_illegal(m68ki_cpu); return;} // this is an invalid size.
 
-	int tablePtr=OPER_I_32();	// = lut address
+	int mask = (size == 0) ? 0xff : (size == 1) ? 0xffff : 0xffffffff;
+	size = 1 << size;
+	int seshift = 32 - size * 8;
+
 	int rd=REG_D[dx]&0xffff;
-	const int radix=8;
-	int frac=rd&((1<<radix)-1);
-	int address=tablePtr+(rd>>radix)*4;
-	
-	int a=m68ki_read_32(address),b=m68ki_read_32(address+4);
-	long long diff=b-a;
-	diff*=frac;
-	REG_D[dx]=a+(int)(diff>>radix);
+	long long a = 0, b = 0;
+	if (lookup)	// Table Lookup and Interpolate
+	{
+		int address = 0;
+		if (mode == 0 || mode == 1 || mode == 4) {m68ki_exception_illegal(m68ki_cpu); return;} // these are explicitly disallowed
+		if (mode == 2) address = EA_AY_AI_8();
+		else if (mode == 5) address = EA_AY_DI_16(); // (d16,An)
+		else if (mode == 6) address = EA_AY_IX_8(); // (d8, An, Xn) or (bd, An, Xn)?!?
+		else if (mode == 7)
+		{
+			if (reg == 0) address = OPER_I_16(); // (xxx).W
+			else if (reg == 1) address = OPER_I_32(); // (xxx).L
+			else if (reg == 2) address = EA_PCDI_16(); // (d16, PC)
+			else if (reg == 3) address = EA_PCIX_8(); // (d8, PC, Xn) or (bd, PC, Xn)
+			else {m68ki_exception_illegal(m68ki_cpu); return;} // explicitly disallowed
+		}
+		
+	    address += (rd>>8)*size;	// = lut address
+
+		if (size == 4) a=m68ki_read_32(address),b=m68ki_read_32(address+4);
+		else if (size == 2) a=m68ki_read_16(address),b=m68ki_read_16(address+2);
+		else a=m68ki_read_8(address),b=m68ki_read_8(address+1);
+    }
+    else	// Data Register Interpolate
+    {
+		a = REG_D[reg] & mask, b = REG_D[rdyn] & mask;
+    }
+
+	rd &= 255;
+	a &= mask;
+	b &= mask;
+    if (issigned) {a <<= seshift; a >>= seshift; b <<= seshift; b >>= seshift;}
+
+    long long diff = b - a;
+    if (!issigned) diff &= mask;
+
+
+    long long res;
+	if (!rounding) res = (((a + (diff * rd) >> 8)) & mask) | (REG_D[dx] & ~mask);
+	else res = (a * 256 + diff * rd);
+
+	if (!issigned && rounding) res &= mask;
+	REG_D[dx] = res;
+
+	FLAG_N = (res & (1 << (size * 8 - 1)));
+	FLAG_Z |= !res;
+	if (!rounding && size == 2 && (res < -0x800000) || (res > 0x7fffff)) FLAG_V |= 1;
+	FLAG_C = 0;
 }
 
 /* ======================================================================== */
@@ -35449,6 +35496,7 @@ static const opcode_handler_struct m68k_opcode_handler_table[] =
 	{m68k_op_adda_32_pcdi        , 0xf1ff, 0xd1fa, { 18,  18,   7,   7}},
 	{m68k_op_adda_32_pcix        , 0xf1ff, 0xd1fb, { 20,  20,   9,   9}},
 	{m68k_op_adda_32_i           , 0xf1ff, 0xd1fc, { 16,  14,   6,   6}},
+	{m68k_op_tblu				 , 0xffc0, 0xf800, { 34,  34,  34,  34}},
 	{m68k_op_ori_8_d             , 0xfff8, 0x0000, {  8,   8,   2,   2}},
 	{m68k_op_ori_8_ai            , 0xfff8, 0x0010, { 16,  16,   8,   8}},
 	{m68k_op_ori_8_pi            , 0xfff8, 0x0018, { 16,  16,   8,   8}},
@@ -36513,7 +36561,6 @@ static const opcode_handler_struct m68k_opcode_handler_table[] =
 	{m68k_op_bfins_32_aw         , 0xffff, 0xeff8, {  0,   0,  21,  21}},
 	{m68k_op_bfins_32_al         , 0xffff, 0xeff9, {  0,   0,  21,  21}},
 	{m68k_op_pflush_32           , 0xffff, 0xf518, {  0,   0,   0,   4}},
-	{m68k_op_tblu				 , 0xffff, 0xf839, { 34,  34,  34,  34}},
 	{0, 0, 0, {0, 0, 0, 0}}
 };
 
@@ -36602,6 +36649,16 @@ void m68ki_build_opcode_table(void)
 			m68ki_instruction_jump_table[ostruct->match | (i << 9)] = ostruct->opcode_handler;
 			for(k=0;k<NUM_CPU_TYPES;k++)
 				m68ki_cycles[k][ostruct->match | (i << 9)] = ostruct->cycles[k];
+		}
+		ostruct++;
+	}
+	while(ostruct->mask == 0xffc0)
+	{
+		for(i = 0;i < 0x3f; i++)
+		{
+			m68ki_instruction_jump_table[ostruct->match | i] = ostruct->opcode_handler;
+			for(k=0;k<NUM_CPU_TYPES;k++)
+				m68ki_cycles[k][ostruct->match | i] = ostruct->cycles[k];
 		}
 		ostruct++;
 	}
