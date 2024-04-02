@@ -248,6 +248,14 @@ namespace mc68k
 		m_sciTxData.clear();
 	}
 
+	void Qsm::setSpiWriteCallback(const SpiTxCallback& _callback)
+	{
+		m_spiTxCallback = _callback;
+
+		if(!m_spiTxCallback)
+			m_spiTxCallback = [](uint16_t, uint8_t) {};
+	}
+
 	void Qsm::startTransmit(const bool _startAtZero/* = false*/)
 	{
 		// are we master?
@@ -280,6 +288,7 @@ namespace mc68k
 		// push out data
 		const auto data = PeripheralBase::read16(transmitRamAddr(m_nextQueue));
 		m_spiTxData.push_back(data);
+		m_spiTxCallback(data, m_nextQueue);
 
 		// update completed queue index
 		auto sr = spsr();

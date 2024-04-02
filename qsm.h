@@ -15,6 +15,8 @@ namespace mc68k
 	class Qsm final : public PeripheralBase<g_qsmBase, g_qsmSize>
 	{
 	public:
+		using SpiTxCallback = std::function<void(uint16_t, uint8_t)>;
+
 		enum class Sccr1Bits
 		{
 			SendBreak,
@@ -74,6 +76,8 @@ namespace mc68k
 
 		Port& getPortQS() { return m_portQS; }
 
+		void setSpiWriteCallback(const SpiTxCallback& _callback);
+
 	private:
 		void startTransmit(bool _startAtZero = false);
 		void finishTransfer();
@@ -109,5 +113,7 @@ namespace mc68k
 		uint32_t m_sciRxDelay = 0;
 
 		uint16_t m_pendingTxDataCounter = 0;
+
+		SpiTxCallback m_spiTxCallback = [](uint16_t, uint8_t) {};
 	};
 }
