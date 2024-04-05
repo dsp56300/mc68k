@@ -34516,7 +34516,7 @@ static void m68k_op_tblu(m68ki_cpu_core* m68ki_cpu)
 	if (lookup)	// Table Lookup and Interpolate
 	{
 		int address = 0;
-		if (mode == 0 || mode == 1 || mode == 4) {m68ki_exception_illegal(m68ki_cpu); return;} // these are explicitly disallowed
+		if (mode == 0 || mode == 1 || mode == 3 || mode == 4) {m68ki_exception_illegal(m68ki_cpu); return;} // these are explicitly disallowed
 		if (mode == 2) address = EA_AY_AI_8();
 		else if (mode == 5) address = EA_AY_DI_16(); // (d16,An)
 		else if (mode == 6) address = EA_AY_IX_8(); // (d8, An, Xn) or (bd, An, Xn)?!?
