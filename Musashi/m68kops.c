@@ -34554,9 +34554,13 @@ static void m68k_op_tblu(m68ki_cpu_core* m68ki_cpu)
 	else res = (a * 256 + diff * rd);
 
 	if (!issigned && rounding) res &= mask;
-	REG_D[dx] = res;
 
-	FLAG_N = (res & (1 << (size * 8 - 1)));
+	if(issigned && !rounding)
+		REG_D[dx] = (uint)((res << seshift) >> seshift);
+	else
+		REG_D[dx] = (uint)res;
+
+	FLAG_N = (res & (long long)(1 << (size * 8 - 1)));
 	FLAG_Z |= !res;
 	if (!rounding && size == 2 && (res < -0x800000) || (res > 0x7fffff)) FLAG_V |= 1;
 	FLAG_C = 0;
