@@ -34509,7 +34509,7 @@ static void m68k_op_tblu(m68ki_cpu_core* m68ki_cpu)
 
 	int mask = (size == 0) ? 0xff : (size == 1) ? 0xffff : 0xffffffff;
 	size = 1 << size;
-	int seshift = 32 - size * 8;
+	int seshift = 64 - size * 8;
 
 	int rd=REG_D[dx]&0xffff;
 	long long a = 0, b = 0;
