@@ -40,15 +40,22 @@ namespace mc68k
 
 		switch (_addr)
 		{
+		case PeriphAddress::Spcr0:
+//			MCLOG("Set SPCR0 to " << MCHEXN(_val, 4));
+			return;
 		case PeriphAddress::Spcr1:
+//			MCLOG("Set SPCR1 to " << MCHEXN(_val, 4));
 			cancelTransmit();
 			if(!(prev & g_spcr1_speMask) && (_val & g_spcr1_speMask))
 				startTransmit();
 			return;
 		case PeriphAddress::Spcr2:
-//			cancelTransmit();
+//			MCLOG("Set SPCR2 to " << MCHEXN(_val, 4));
+			if(spcr1() & g_spcr1_speMask)
+				startTransmit();
 			break;
 		case PeriphAddress::Spcr3:
+//			MCLOG("Set SPCR3 to " << MCHEXN(_val, 4));
 			cancelTransmit();
 			// acknowledge halt if halt requested
 			if(!(prev & g_spcr3_haltMask) && (_val & g_spcr3_haltMask))
@@ -92,12 +99,14 @@ namespace mc68k
 			return PeripheralBase::read16(_addr);
 		}
 
-//		MCLOG("read16 addr=" << MCHEXN(_addr, 8));
+//		MCLOG("read16 addr=" << MCHEXN(_addr, 8) << ", pc=" << MCHEXN(m_mc68k.getPC(), 6));
 		return PeripheralBase::read16(_addr);
 	}
 
 	void Qsm::write8(PeriphAddress _addr, uint8_t _val)
 	{
+//		MCLOG("write8 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(static_cast<int>(_val),2));
+
 		if(_addr == PeriphAddress::SciControl1LSB)
 		{
 			write16(PeriphAddress::SciControl1, (read16(PeriphAddress::SciControl1) & 0xff00) | _val);
@@ -144,10 +153,9 @@ namespace mc68k
 			MCLOG("Set SCSR to " << MCHEXN(_val, 2));
 			return;
 		}
-//		MCLOG("write8 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(static_cast<int>(_val),2));
 	}
 
-	uint8_t Qsm::read8(PeriphAddress _addr)
+	uint8_t Qsm::read8(const PeriphAddress _addr)
 	{
 		switch (_addr)
 		{
@@ -165,18 +173,18 @@ namespace mc68k
 		case PeriphAddress::Spsr:
 			return PeripheralBase::read8(_addr);
 		}
-//		MCLOG("read8 addr=" << MCHEXN(_addr, 8));
+//		MCLOG("read8 addr=" << MCHEXN(_addr, 8) << ", pc=" << MCHEXN(m_mc68k.getPC(), 6));
 		return PeripheralBase::read8(_addr);
 	}
 
 	void Qsm::injectInterrupt(ScsrBits)
 	{
-		const auto vector = PeripheralBase::read8(PeriphAddress::Qivr) & 0xfe;
+		const uint8_t vector = PeripheralBase::read8(PeriphAddress::Qivr) & 0xfe;
 		const auto levelQsci = static_cast<uint8_t>(PeripheralBase::read8(PeriphAddress::Qilr) & 0x7);
 		m_mc68k.injectInterrupt(vector, levelQsci);
 	}
 
-	void Qsm::exec(uint32_t _deltaCycles)
+	void Qsm::exec(const uint32_t _deltaCycles)
 	{
 		PeripheralBase::exec(_deltaCycles);
 
@@ -262,6 +270,8 @@ namespace mc68k
 		// are we master?
 		if(!(spcr0() & g_spcr0_mstrMask))
 			return;
+
+//		MCLOG("Start SPI transmission");
 
 		const auto cr3 = spcr3();
 
