@@ -190,6 +190,8 @@ namespace mc68k
 				execTransmit();
 		}
 
+		// SCI
+
 		if(m_pendingTxDataCounter == 2)
 		{
 			--m_pendingTxDataCounter;
@@ -208,7 +210,6 @@ namespace mc68k
 				injectInterrupt(ScsrBits::TransmitComplete);
 		}
 
-		// SCI
 		if(m_sciRxDelay > 0)
 		{
 			--m_sciRxDelay;
