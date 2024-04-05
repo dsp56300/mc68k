@@ -126,7 +126,9 @@ namespace mc68k
 				startTransmit();
 			return;
 		case PeriphAddress::Spcr2:
-//			cancelTransmit();
+//			MCLOG("Set SPCR2 to " << MCHEXN(_val, 4));
+			if(spcr1() & g_spcr1_speMask)
+				startTransmit();
 			return;
 		case PeriphAddress::Spcr3:
 			cancelTransmit();
@@ -280,6 +282,9 @@ namespace mc68k
 		if(halt)
 			return;
 
+		// clear completion flag
+		spsr(spsr() & ~g_spsr_spifMask);
+
 		m_nextQueue = _startAtZero ? 0 : (spcr2() & g_spcr2_newqpMask);
 	}
 
@@ -290,6 +295,9 @@ namespace mc68k
 		const auto halt = cr3 & g_spcr3_haltMask;
 
 		if(halt)
+			return;
+
+		if(spsr() & g_spsr_spifMask)
 			return;
 
 		// "SPI Baud Rate = System Clock / (2*SPBR)"
@@ -328,9 +336,9 @@ namespace mc68k
 		spsr(spsr() | g_spsr_spifMask);
 
 		// clear enabled flag
-		auto cr1 = spcr1();
-		cr1 &= ~g_spcr1_speMask;
-		spcr1(cr1);
+//		auto cr1 = spcr1();
+//		cr1 &= ~g_spcr1_speMask;
+//		spcr1(cr1);
 	}
 
 	uint16_t Qsm::bitTest(uint16_t _value, Sccr1Bits _bit)
