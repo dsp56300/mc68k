@@ -29,10 +29,14 @@ namespace mc68k
 		void timerOverflow();
 
 	private:
+		template<uint32_t TocIndex>	void execToc(uint32_t _deltaCycles);
+		template<uint32_t TocIndex>	void updateToc();
+
+		uint64_t rawTcnt() const;
 		Mc68k& m_mc68k;
 		Port m_portGP;
-		uint16_t m_prevTcnt = 0;
 
 		std::array<TTimerFunc, 2> m_timerFuncs;
+		std::array<int32_t, 4> m_tocLoad;
 	};
 }

@@ -14,39 +14,24 @@ namespace mc68k
 		void funcTimerNoOverflow(Gpt*)
 		{
 		}
-		constexpr uint16_t g_tmsk1_oci1Bit = 11;
-		constexpr uint16_t g_tmsk1_oci2Bit = 12;
-		constexpr uint16_t g_tmsk1_oci3Bit = 13;
-		constexpr uint16_t g_tmsk1_oci4Bit = 14;
+		constexpr uint16_t g_tmsk1_ociBit[] = {11,12,13,14};
+		constexpr uint16_t g_tmsk1_ociMask[] = {(1<<g_tmsk1_ociBit[0]), (1<<g_tmsk1_ociBit[1]), (1<<g_tmsk1_ociBit[2]), (1<<g_tmsk1_ociBit[3])};
 
-		constexpr uint16_t g_tmsk1_oci1Mask = (1<<g_tmsk1_oci1Bit);
-		constexpr uint16_t g_tmsk1_oci2Mask = (1<<g_tmsk1_oci2Bit);
-		constexpr uint16_t g_tmsk1_oci3Mask = (1<<g_tmsk1_oci3Bit);
-		constexpr uint16_t g_tmsk1_oci4Mask = (1<<g_tmsk1_oci4Bit);
+		constexpr uint8_t g_vba_oc[] = {0b100, 0b100 + 1, 0b100 + 2, 0b100 + 3};
 
-		constexpr uint8_t g_vba_oc1 = 0b100;
-		constexpr uint8_t g_vba_oc2 = g_vba_oc1 + 1;
-		constexpr uint8_t g_vba_oc3 = g_vba_oc1 + 2;
-		constexpr uint8_t g_vba_oc4 = g_vba_oc1 + 3;
+		constexpr uint16_t g_tflg1_ocfBit[] = {11, 12, 13, 14};
+		constexpr uint16_t g_tflg1_ocfMask[] = {(1<<g_tflg1_ocfBit[0]), (1<<g_tflg1_ocfBit[1]), (1<<g_tflg1_ocfBit[2]), (1<<g_tflg1_ocfBit[3])};
 
-		constexpr uint16_t g_tflg1_oc1fBit = 11;
-		constexpr uint16_t g_tflg1_oc2fBit = 12;
-		constexpr uint16_t g_tflg1_oc3fBit = 13;
-		constexpr uint16_t g_tflg1_oc4fBit = 14;
+		constexpr uint16_t g_tflg1_ocfAll = g_tflg1_ocfMask[0] | g_tflg1_ocfMask[1] | g_tflg1_ocfMask[2] | g_tflg1_ocfMask[3];
 
-		constexpr uint16_t g_tflg1_oc1fMask = (1<<g_tflg1_oc1fBit);
-		constexpr uint16_t g_tflg1_oc2fMask = (1<<g_tflg1_oc2fBit);
-		constexpr uint16_t g_tflg1_oc3fMask = (1<<g_tflg1_oc3fBit);
-		constexpr uint16_t g_tflg1_oc4fMask = (1<<g_tflg1_oc4fBit);
-
-		constexpr uint16_t g_tflg1_ocfAll = g_tflg1_oc1fMask | g_tflg1_oc2fMask | g_tflg1_oc3fMask | g_tflg1_oc4fMask;
-
+		constexpr uint16_t g_tocCount = 2;	// we only need 2 for now, save performance by ignoring the others
 	}
 
 	Gpt::Gpt(Mc68k& _mc68k): m_mc68k(_mc68k)
 	{
 		m_timerFuncs[0] = &funcTimerNoOverflow;
 		m_timerFuncs[1] = &funcTimerOverflow;
+		m_tocLoad.fill(0);
 
 		write16(PeriphAddress::Tmsk1, 0);
 		write16(PeriphAddress::Tflg1, 0);
@@ -102,6 +87,16 @@ namespace mc68k
 			m_portGP.setDirection(_val & 0xff);
 			m_portGP.writeTX(_val>>8);
 			break;
+		case PeriphAddress::Toc1:	updateToc<0>();		break;
+		case PeriphAddress::Toc2:	updateToc<1>();		break;
+		case PeriphAddress::Toc3:	updateToc<2>();		break;
+		case PeriphAddress::Toc4:	updateToc<3>();		break;
+		case PeriphAddress::Tflg1:
+			updateToc<0>();
+			updateToc<1>();
+			updateToc<2>();
+			updateToc<3>();
+			break;
 //		default:
 //			MCLOG("write16 addr=" << MCHEXN(_addr, 8) << ", val=" << MCHEXN(_val,4));
 		}
@@ -119,7 +114,7 @@ namespace mc68k
 			}
 		case PeriphAddress::Tcnt:
 			{
-				const auto r = (m_mc68k.getCycles() >> 2) & 0xffff;
+				const auto r = rawTcnt() & 0xffff;
 //				MCLOG("Read TCNT=" << MCHEXN(r,4) << " at PC=" << m_mc68k.getPC());
 				return static_cast<uint16_t>(r);
 			}
@@ -143,18 +138,12 @@ namespace mc68k
 
 	void Gpt::exec(const uint32_t _deltaCycles)
 	{
-		// this code will jump to member function 'timerOverflow' if the timer overflowed, jumps to a nop otherwise
-		const uint16_t tcnt = read16(PeriphAddress::Tcnt);
-
-		const int timerDiff = static_cast<int>(tcnt) - static_cast<int>(m_prevTcnt);
-
-		m_prevTcnt = tcnt;
-
-		const uint32_t overflow = static_cast<uint32_t>(timerDiff) >> 31;
-
-		m_timerFuncs[overflow](this);
-
 		PeripheralBase::exec(_deltaCycles);
+
+		if constexpr (g_tocCount > 0)	execToc<0>(_deltaCycles);
+		if constexpr (g_tocCount > 1)	execToc<1>(_deltaCycles);
+		if constexpr (g_tocCount > 2)	execToc<2>(_deltaCycles);
+		if constexpr (g_tocCount > 3)	execToc<3>(_deltaCycles);
 	}
 
 	void Gpt::timerOverflow()
@@ -163,9 +152,65 @@ namespace mc68k
 
 		write16(PeriphAddress::Tflg1, read16(PeriphAddress::Tflg1) | g_tflg1_ocfAll);
 
-		if(tmsk & g_tmsk1_oci1Mask)		injectInterrupt(g_vba_oc1);
-		if(tmsk & g_tmsk1_oci2Mask)		injectInterrupt(g_vba_oc2);
-		if(tmsk & g_tmsk1_oci3Mask)		injectInterrupt(g_vba_oc3);
-		if(tmsk & g_tmsk1_oci4Mask)		injectInterrupt(g_vba_oc4);
+		if(tmsk & g_tmsk1_ociMask[0])		injectInterrupt(g_vba_oc[0]);
+		if(tmsk & g_tmsk1_ociMask[1])		injectInterrupt(g_vba_oc[1]);
+		if(tmsk & g_tmsk1_ociMask[2])		injectInterrupt(g_vba_oc[2]);
+		if(tmsk & g_tmsk1_ociMask[3])		injectInterrupt(g_vba_oc[3]);
+	}
+
+	template<uint32_t TocIndex>
+	void Gpt::execToc(const uint32_t _deltaCycles)
+	{
+		constexpr auto tocDiff = static_cast<uint32_t>(PeriphAddress::Toc2) - static_cast<uint32_t>(PeriphAddress::Toc1);
+		constexpr auto tocAddr = static_cast<PeriphAddress>(static_cast<uint32_t>(PeriphAddress::Toc1) + (TocIndex * tocDiff));
+		constexpr auto finishedMask = g_tmsk1_ociMask[TocIndex];
+		constexpr auto interruptMask = g_tflg1_ocfMask[TocIndex];
+		constexpr auto vba = g_vba_oc[TocIndex];
+
+		auto& tocLoad = m_tocLoad[TocIndex];
+
+		const auto tocTarget = static_cast<int32_t>(read16(tocAddr)) << 2;
+
+		tocLoad += static_cast<int32_t>(_deltaCycles);
+
+		if(tocLoad < tocTarget)
+			return;
+
+		const auto tflg = PeripheralBase::read16(PeriphAddress::Tflg1);
+		const auto wasFinished = tflg & finishedMask;
+
+		if(wasFinished)
+			return;
+
+		// set finished flag
+		PeripheralBase::write16(PeriphAddress::Tflg1, tflg | finishedMask);
+
+		const auto tmsk = PeripheralBase::read16(PeriphAddress::Tmsk1);
+		const auto interruptEnabled = tmsk & interruptMask;
+
+		// inject interrupt if enabled
+		if(interruptEnabled)
+			injectInterrupt(vba);
+	}
+
+	template <uint32_t TocIndex> void Gpt::updateToc()
+	{
+		constexpr auto tocDiff = static_cast<uint32_t>(PeriphAddress::Toc2) - static_cast<uint32_t>(PeriphAddress::Toc1);
+		constexpr auto tocAddr = static_cast<PeriphAddress>(static_cast<uint32_t>(PeriphAddress::Toc1) + (TocIndex * tocDiff));
+
+		const auto value = PeripheralBase::read16(tocAddr) << 2;
+
+		auto& load = m_tocLoad[TocIndex];
+
+		while(load > value)
+			load -= 0x40000;
+
+		while((value - load) >= 0x40000)
+			load += 0x40000;
+	}
+
+	uint64_t Gpt::rawTcnt() const
+	{
+		return (m_mc68k.getCycles() >> 2);
 	}
 }
