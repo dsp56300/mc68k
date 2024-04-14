@@ -267,6 +267,14 @@ namespace mc68k
 			m_spiTxCallback = [](uint16_t, uint8_t) {};
 	}
 
+	void Qsm::setSpiWriteFinishCallback(const SpiTxFinishCallback& _callback)
+	{
+		m_spiTxFinishCallback = _callback;
+
+		if(!m_spiTxFinishCallback)
+			m_spiTxFinishCallback = [](uint8_t) {};
+	}
+
 	void Qsm::startTransmit(const bool _startAtZero/* = false*/)
 	{
 		// are we master?
@@ -390,6 +398,8 @@ namespace mc68k
 
 	void Qsm::finishTransfer()
 	{
+		m_spiTxFinishCallback(m_nextQueue);
+
 		m_nextQueue = 0xff;
 
 		// set completion flag

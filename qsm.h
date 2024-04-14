@@ -16,6 +16,7 @@ namespace mc68k
 	{
 	public:
 		using SpiTxCallback = std::function<void(uint16_t, uint8_t)>;
+		using SpiTxFinishCallback = std::function<void(uint8_t)>;
 
 		enum class Sccr1Bits
 		{
@@ -77,6 +78,7 @@ namespace mc68k
 		Port& getPortQS() { return m_portQS; }
 
 		void setSpiWriteCallback(const SpiTxCallback& _callback);
+		void setSpiWriteFinishCallback(const SpiTxFinishCallback& _callback);
 
 	private:
 		void startTransmit(bool _startAtZero = false);
@@ -115,5 +117,6 @@ namespace mc68k
 		uint16_t m_pendingTxDataCounter = 0;
 
 		SpiTxCallback m_spiTxCallback = [](uint16_t, uint8_t) {};
+		SpiTxFinishCallback m_spiTxFinishCallback = [](uint8_t) {};
 	};
 }
