@@ -160,13 +160,20 @@ namespace mc68k
 		return false;
 	}
 
-	void Mc68k::writeW(uint8_t* _buf, size_t _offset, uint16_t _value)
+	void Mc68k::writeW(uint8_t* _buf, const size_t _offset, uint16_t _value)
 	{
-		_buf[_offset] = _value >> 8;
-		_buf[_offset+1] = _value & 0xff;
+		auto* p8 = &_buf[_offset];
+		auto* p16 = reinterpret_cast<uint16_t*>(p8);
+
+		if constexpr (hostEndian() != HostEndian::Big)
+		{
+			_value = static_cast<uint16_t>((_value << 8) | (_value >> 8));
+		}
+
+		*p16 = _value;
 	}
 
-	uint16_t Mc68k::readW(const uint8_t* _buf, size_t _offset)
+	uint16_t Mc68k::readW(const uint8_t* _buf, const size_t _offset)
 	{
 		const auto* ptr = &_buf[_offset];
 
