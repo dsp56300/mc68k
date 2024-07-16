@@ -13,6 +13,7 @@ namespace mc68k
 		setWriteTxCallback(nullptr);
 		setWriteIrqCallback(nullptr);
 		setReadIsrCallback(nullptr);
+		setInitHdi08Callback(nullptr);
 
 		write8(PeriphAddress::HdiIVR, 0xf);
 	}
@@ -67,6 +68,7 @@ namespace mc68k
 			if(_val & Init)
 			{
 				MCLOG("HDI08 Initialization, HREQ=" << (_val & Rreq) << ", TREQ=" << (_val & Treq));
+				m_initHdi08Callback();
 			}
 			return;
 		case PeriphAddress::HdiCVR:
@@ -193,13 +195,17 @@ namespace mc68k
 	void Hdi08::setReadIsrCallback(const CallbackReadIsr& _readIsrCallback)
 	{
 		if(_readIsrCallback)
-		{
 			m_readIsrCallback = _readIsrCallback;
-		}
 		else
-		{
 			m_readIsrCallback = [](const uint8_t _isr) { return _isr; };
-		}
+	}
+
+	void Hdi08::setInitHdi08Callback(const CallbackInitHdi08& _callback)
+	{
+		if(_callback)
+			m_initHdi08Callback = _callback;
+		else
+			m_initHdi08Callback = [] {};
 	}
 
 	void Hdi08::writeTX(WordFlags _index, uint8_t _val)
