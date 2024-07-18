@@ -208,22 +208,14 @@ namespace mc68k
 			m_initHdi08Callback = [] {};
 	}
 
-	void Hdi08::writeTX(WordFlags _index, uint8_t _val)
+	void Hdi08::writeTX(WordFlags _index, const uint8_t _val)
 	{
 		m_txBytes[static_cast<uint32_t>(_index)] = _val;
 
-		const auto lastWritten = m_writtenFlags;
 		addIndex(m_writtenFlags, _index);
-		assert(lastWritten != m_writtenFlags && "byte written twice!");
 
-#if 1
-		if(m_writtenFlags != WordFlags::Mask)
+		if(_index != WordFlags::L)
 			return;
-#else
-		const auto le = littleEndian();
-		if((le && _index != WordFlags::L) || (!le && _index != WordFlags::H))
-			return;
-#endif
 
 		const uint32_t h = m_txBytes[0];
 		const uint32_t m = m_txBytes[1];

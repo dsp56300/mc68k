@@ -68,10 +68,12 @@ namespace mc68k
 
 		uint8_t isr()
 		{
-			auto isr = m_readIsrCallback(PeripheralBase::read8(PeriphAddress::HdiISR));
+			auto isr = PeripheralBase::read8(PeriphAddress::HdiISR);
 
 			// we want new data for transmission
 			isr |= Txde;
+
+			isr = m_readIsrCallback(isr);
 
 			return isr;
 		}
