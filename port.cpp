@@ -2,7 +2,10 @@
 
 namespace mc68k
 {
-	Port::Port() : m_dirChangeCallback([](const Port&){}), m_writeTXCallback([](const Port&) {})
+	Port::Port()
+		: m_dirChangeCallback([](const Port&){})
+		, m_writeTXCallback([](const Port&) {})
+		, m_readRXCallback([](const Port& , uint8_t _c) { return _c; })
 	{
 	}
 
@@ -37,5 +40,12 @@ namespace mc68k
 		m_writeTXCallback = _func;
 		if(!m_writeTXCallback)
 			m_writeTXCallback = [](const Port&){};
+	}
+
+	void Port::setReadRXCallback(const std::function<uint8_t(const Port&, uint8_t)>& _func)
+	{
+		m_readRXCallback = _func;
+		if(!m_readRXCallback)
+			m_readRXCallback = [](const Port&, const uint8_t _c) { return _c; };
 	}
 }

@@ -29,7 +29,7 @@ namespace mc68k
 
 		uint8_t read() const
 		{
-			return m_data;
+			return m_readRXCallback(*this, m_data);
 		}
 
 		void enablePins(uint8_t _pins)
@@ -59,6 +59,7 @@ namespace mc68k
 
 		void setDirectionChangeCallback(const std::function<void(const Port&)>& _func);
 		void setWriteTXCallback(const std::function<void(const Port&)>& _func);
+		void setReadRXCallback(const std::function<uint8_t(const Port&, uint8_t)>& _func);
 
 	private:
 		uint8_t m_direction = 0;		// 0 = input, 1 = output
@@ -67,5 +68,6 @@ namespace mc68k
 		uint32_t m_writeCounter = 0;
 		std::function<void(const Port&)> m_dirChangeCallback;
 		std::function<void(const Port&)> m_writeTXCallback;
+		std::function<uint8_t(const Port&, uint8_t)> m_readRXCallback;
 	};
 }
