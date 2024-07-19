@@ -293,7 +293,7 @@ namespace mc68k
 		return m_cpuState;
 	}
 
-	bool Mc68k::dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count)
+	bool Mc68k::dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count, bool _splitFunctions/* = true*/)
 	{
 		std::ofstream f(_filename, std::ios::out);
 
@@ -304,11 +304,19 @@ namespace mc68k
 		{
 			char disasm[64];
 			const auto opSize = disassemble(i, disasm);
-			f << MCHEXN(i,6) << ": " << disasm << std::endl;
+			f << MCHEXN(i,6) << ": " << disasm << '\n';
 			if(!opSize)
 				++i;
 			else
 				i += opSize;
+
+			auto startsWith = [&](const char* _search)
+			{
+				return strstr(disasm, _search) == disasm;
+			};
+
+			if(startsWith("rts") || startsWith("bra ") || startsWith("jmp "))
+				f << '\n';
 		}
 		f.close();
 		return true;
