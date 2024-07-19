@@ -6,7 +6,7 @@ namespace mc68k
 	{
 	}
 
-	void Port::writeTX(uint8_t _data)
+	void Port::writeTX(const uint8_t _data)
 	{
 		// only write pins that are enabled and that are set to output
 		const auto mask = m_direction & m_enabledPins;
@@ -17,7 +17,7 @@ namespace mc68k
 		m_writeTXCallback(*this);
 	}
 
-	void Port::writeRX(uint8_t _data)
+	void Port::writeRX(const uint8_t _data)
 	{
 		// only write pins that are enabled and that are set to input
 		const auto mask = (~m_direction) & m_enabledPins;

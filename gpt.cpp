@@ -110,7 +110,7 @@ namespace mc68k
 			{
 				const uint16_t dir = m_portGP.getDirection();
 				const uint16_t data = m_portGP.read();
-				return dir << 8 | data;
+				return (dir << 8) | data;
 			}
 		case PeriphAddress::Tcnt:
 			{
