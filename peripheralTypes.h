@@ -44,6 +44,14 @@ namespace mc68k
 		Tctl1			= 0xFF91e,	// TCTL1/TCTL2 - Timer Control Registers 1 and 2 $YFF91E
 		Tmsk1			= 0xFF920,	// TMSK1/TMSK2 - Timer Interrupt Mask Registers 1 and 2 $YFF920
 		Tflg1			= 0xFF922,	// TFLG1/TFLG2 - Timer Interrupt Flag Registers 1 and 2 $YFF922
+		Cforc			= 0xFF924,	// CFORC - Compare Force Register
+		PwmC			= 0xFF925,	// PWMC - PWM Control Register C
+		PwmA			= 0xFF926,	// PWMA - PWM Register A
+		PwmB			= 0xFF927,	// PWMB - PWM Register B
+		PwmCnt			= 0xFF928,	// PWMCNT - PWM Count Register
+		PwmBufA			= 0xFF92a,	// PWMBUFA - PWM Buffer Register A
+		PwmBufB			= 0xFF92b,	// PWMBUFB - PWM Buffer Register B
+		Prescl			= 0xFF92c,	// PRESCL - GPT Prescaler
 
 		// SIM
 		Syncr			= 0xFFA04,	// $YFFA04 CLOCK SYNTHESIZER CONTROL (SYNCR)
