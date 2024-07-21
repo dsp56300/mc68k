@@ -41,6 +41,9 @@ namespace mc68k
 
 		virtual void exec(uint32_t _deltaCycles) {}
 
+		static constexpr uint32_t base() { return Base; }
+		static constexpr uint32_t size() { return Size; }
+
 	private:
 		std::array<uint8_t, Size> m_buffer;
 	};
