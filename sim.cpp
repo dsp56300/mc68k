@@ -158,7 +158,8 @@ namespace mc68k
 			const auto iv = picr & PivMask;
 			const auto il = (picr & PirqlMask) >> PirqlShift;
 
-			m_mc68k.injectInterrupt(static_cast<uint8_t>(iv), static_cast<uint8_t>(il));
+			if(!m_mc68k.hasPendingInterrupt(static_cast<uint8_t>(iv), static_cast<uint8_t>(il)))
+				m_mc68k.injectInterrupt(static_cast<uint8_t>(iv), static_cast<uint8_t>(il));
 
 			m_timerCurrentValue += m_timerLoadValue;
 		}
