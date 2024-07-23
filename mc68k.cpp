@@ -3,6 +3,7 @@
 #include <cassert>
 #include <atomic>
 #include <fstream>
+#include <cstring>	// strstr
 
 #include "logging.h"
 
