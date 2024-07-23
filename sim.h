@@ -39,6 +39,8 @@ namespace mc68k
 
 		uint32_t getSystemClockHz() const { return m_systemClockHz; }
 
+		void setExternalClockHz(const uint32_t _hz);
+
 	private:
 		void initTimer();
 		void updateClock();

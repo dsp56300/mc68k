@@ -164,6 +164,14 @@ namespace mc68k
 		}
 	}
 
+	void Sim::setExternalClockHz(const uint32_t _hz)
+	{
+		if(_hz == m_externalClockHz)
+			return;
+		m_externalClockHz = _hz;
+		updateClock();
+	}
+
 	void Sim::initTimer()
 	{
 		const auto picr = read16(PeriphAddress::Picr);
