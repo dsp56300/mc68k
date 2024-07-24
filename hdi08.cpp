@@ -134,7 +134,7 @@ namespace mc68k
 			pollRx();
 	}
 
-	void Hdi08::exec(uint32_t _deltaCycles)
+	void Hdi08::exec(const uint32_t _deltaCycles)
 	{
 		PeripheralBase::exec(_deltaCycles);
 
@@ -150,7 +150,9 @@ namespace mc68k
 
 		if(m_readTimeoutCycles >= g_readTimeoutCycles)
 		{
+#ifdef _DEBUG
 			MCLOG("HDI RX read timeout on byte " << MCHEXN(m_rxd, 2));
+#endif
 			isr &= ~Rxdf;
 			write8(PeriphAddress::HdiISR, isr);
 			pollRx();
