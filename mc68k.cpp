@@ -114,7 +114,7 @@ namespace mc68k
 		m_cpuStateBuf.fill(0);
 
 		static_assert(sizeof(CpuState) <= CpuStateSize);
-		m_cpuState = reinterpret_cast<CpuState*>(&m_cpuStateBuf[0]);
+		m_cpuState = reinterpret_cast<CpuState*>(m_cpuStateBuf.data());
 
 		g_instance = this;
 
@@ -161,31 +161,10 @@ namespace mc68k
 		return false;
 	}
 
-	void Mc68k::writeW(uint8_t* _buf, const size_t _offset, uint16_t _value)
+	uint32_t Mc68k::onIllegalInstruction(uint32_t _opcode)
 	{
-		auto* p8 = &_buf[_offset];
-		auto* p16 = reinterpret_cast<uint16_t*>(p8);
-
-		if constexpr (hostEndian() != HostEndian::Big)
-		{
-			_value = static_cast<uint16_t>((_value << 8) | (_value >> 8));
-		}
-
-		*p16 = _value;
-	}
-
-	uint16_t Mc68k::readW(const uint8_t* _buf, const size_t _offset)
-	{
-		const auto* ptr = &_buf[_offset];
-
-		const auto v16 = *reinterpret_cast<const uint16_t*>(ptr);
-
-		if constexpr (hostEndian() == HostEndian::Big)
-		{
-			return v16;
-		}
-
-		return static_cast<uint16_t>(v16 << 8 | v16 >> 8);
+		assert(false && "MC68331 illegal instruction");
+		return 0;
 	}
 
 	uint8_t Mc68k::read8(uint32_t _addr)

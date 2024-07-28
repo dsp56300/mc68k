@@ -23,6 +23,16 @@ namespace mc68k
 
 		static constexpr uint32_t CpuStateSize = 600;
 
+		static constexpr HostEndian hostEndian()
+		{
+			constexpr uint32_t test32 = 0x01020304;
+			constexpr uint8_t test8 = static_cast<const uint8_t&>(test32);
+
+			static_assert(test8 == 0x01 || test8 == 0x04, "unable to determine endianess");
+
+			return test8 == 0x01 ? HostEndian::Big : HostEndian::Little;
+		}
+
 		Mc68k();
 		virtual ~Mc68k();
 
@@ -32,15 +42,40 @@ namespace mc68k
 		bool hasPendingInterrupt(uint8_t _vector, uint8_t _level) const;
 
 		virtual void onReset() {}
-		virtual uint32_t onIllegalInstruction(uint32_t opcode) { return 0; }
+		virtual uint32_t onIllegalInstruction(uint32_t _opcode);
 
-		static void writeW(uint8_t* _buf, size_t _offset, uint16_t _value);
+		static void writeW(uint8_t* _buf, size_t _offset, uint16_t _value)
+		{
+			auto* p8 = &_buf[_offset];
+			auto* p16 = reinterpret_cast<uint16_t*>(p8);
+
+			if constexpr (hostEndian() != HostEndian::Big)
+			{
+				_value = static_cast<uint16_t>((_value << 8) | (_value >> 8));
+			}
+
+			*p16 = _value;
+		}
+
 		static void writeW(std::vector<uint8_t>& _buf, size_t _offset, uint16_t _value)
 		{
 			writeW(_buf.data(), _offset, _value);
 		}
 
-		static uint16_t readW(const uint8_t* _buf, size_t _offset);
+		static uint16_t readW(const uint8_t* _buf, size_t _offset)
+		{
+			const auto* ptr = &_buf[_offset];
+
+			const auto v16 = *reinterpret_cast<const uint16_t*>(ptr);
+
+			if constexpr (hostEndian() == HostEndian::Big)
+			{
+				return v16;
+			}
+
+			return static_cast<uint16_t>(v16 << 8 | v16 >> 8);
+		}
+
 		static uint16_t readW(const std::vector<uint8_t>& _buf, size_t _offset)
 		{
 			return readW(_buf.data(), _offset);
@@ -76,16 +111,6 @@ namespace mc68k
 		Gpt& getGPT()		{ return m_gpt; }
 		Qsm& getQSM()		{ return m_qsm; }
 		Sim& getSim()		{ return m_sim; }
-
-		static constexpr HostEndian hostEndian()
-		{
-			constexpr uint32_t test32 = 0x01020304;
-			constexpr uint8_t test8 = static_cast<const uint8_t&>(test32);
-
-			static_assert(test8 == 0x01 || test8 == 0x04, "unable to determine endianess");
-
-			return test8 == 0x01 ? HostEndian::Big : HostEndian::Little;
-		}
 
 		CpuState* getCpuState();
 		const CpuState* getCpuState() const;
