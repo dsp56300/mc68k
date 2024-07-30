@@ -148,8 +148,11 @@ namespace mc68k
 			MCLOG("Set PortQS to " << MCHEXN(_val,2));
 			m_portQS.writeTX(_val);
 			return;
-		case PeriphAddress::SciData:
+		case PeriphAddress::SciDataLSB:
 			writeSciData(_val);
+			return;
+		case PeriphAddress::SciData:
+			writeSciData(static_cast<uint16_t>(static_cast<uint32_t>(_val) << 8));
 			return;
 		case PeriphAddress::SciStatus:
 			MCLOG("Set SCSR to " << MCHEXN(_val, 2));
