@@ -7,79 +7,23 @@
 
 #include "logging.h"
 
-#include "Musashi/m68kcpu.h"
+#include "cpuState.h"
 
-struct CpuState : m68ki_cpu_core
+namespace
 {
-	mc68k::Mc68k* instance = nullptr;
-};
+	std::atomic<mc68k::Mc68k*> g_instance = nullptr;
 
-std::atomic<mc68k::Mc68k*> g_instance = nullptr;
-
-mc68k::Mc68k* getInstance(m68ki_cpu_core* _core)
-{
-	return static_cast<CpuState*>(_core)->instance;
+	mc68k::Mc68k* getInstance(m68ki_cpu_core* _core)
+	{
+		return static_cast<mc68k::CpuState*>(_core)->instance;
+	}
 }
 
 extern "C"
 {
-	unsigned int m68k_read_immediate_16(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->readImm16(address);
-	}
-	unsigned int m68k_read_immediate_32(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->readImm32(address);
-	}
-
-	unsigned int m68k_read_pcrelative_8(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read8(address);
-	}
-	unsigned int m68k_read_pcrelative_16(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read16(address);
-	}
-	unsigned int m68k_read_pcrelative_32(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read32(address);
-	}
-
-	unsigned int m68k_read_memory_8(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read8(address);
-	}
-	unsigned int m68k_read_memory_16(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read16(address);
-	}
-	unsigned int m68k_read_memory_32(m68ki_cpu_core* core, unsigned int address)
-	{
-		return getInstance(core)->read32(address);
-	}
-	void m68k_write_memory_8(m68ki_cpu_core* core, unsigned int address, unsigned int value)
-	{
-		getInstance(core)->write8(address, static_cast<uint8_t>(value));
-	}
-	void m68k_write_memory_16(m68ki_cpu_core* core, unsigned int address, unsigned int value)
-	{
-		getInstance(core)->write16(address, static_cast<uint16_t>(value));
-	}
-	void m68k_write_memory_32(m68ki_cpu_core* core, unsigned int address, unsigned int value)
-	{
-		getInstance(core)->write32(address, value);
-	}
 	int m68k_int_ack(m68ki_cpu_core* core, int int_level)
 	{
 		return static_cast<int>(getInstance(core)->readIrqUserVector(static_cast<uint8_t>(int_level)));
-	}
-	int read_sp_on_reset(m68ki_cpu_core* core)
-	{
-		return static_cast<int>(getInstance(core)->getResetSP());
-	}
-	int read_pc_on_reset(m68ki_cpu_core* core)
-	{
-		return static_cast<int>(getInstance(core)->getResetPC());
 	}
 	int m68k_illegal_cbk(m68ki_cpu_core* core, int opcode)
 	{
@@ -189,13 +133,6 @@ namespace mc68k
 		return 0;
 	}
 
-	uint32_t Mc68k::read32(const uint32_t _addr)
-	{
-		uint32_t res = static_cast<uint32_t>(read16(_addr)) << 16;
-		res |= read16(_addr + 2);
-		return res;
-	}
-
 	void Mc68k::write8(uint32_t _addr, uint8_t _val)
 	{
 		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
@@ -212,19 +149,6 @@ namespace mc68k
 		if(m_gpt.isInRange(addr))			m_gpt.write16(addr, _val);
 		else if(m_sim.isInRange(addr))		m_sim.write16(addr, _val);
 		else if(m_qsm.isInRange(addr))		m_qsm.write16(addr, _val);
-	}
-
-	void Mc68k::write32(uint32_t _addr, uint32_t _val)
-	{
-		write16(_addr, _val >> 16);
-		write16(_addr + 2, _val & 0xffff);
-	}
-
-	uint32_t Mc68k::readImm32(uint32_t _addr)
-	{
-		uint32_t res = static_cast<uint32_t>(readImm16(_addr)) << 16;
-		res |= readImm16(_addr + 2);
-		return res;
 	}
 
 	uint32_t Mc68k::readIrqUserVector(const uint8_t _level)

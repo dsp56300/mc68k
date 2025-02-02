@@ -25,11 +25,13 @@ set(SOURCES_MUSASHI
 )
 
 set(SOURCES
+	cpuState.h
 	gpt.cpp gpt.h
 	hdi08.cpp hdi08.h
 	hdi08periph.h
 	logging.cpp logging.h
 	mc68k.cpp mc68k.h
+	musashiEntry.h
 	peripheralBase.cpp peripheralBase.h
 	peripheralTypes.h
 	port.cpp port.h

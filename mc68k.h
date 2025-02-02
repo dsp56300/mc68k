@@ -8,10 +8,10 @@
 #include "qsm.h"
 #include "sim.h"
 
-struct CpuState;
-
 namespace mc68k
 {
+	struct CpuState;
+
 	class Mc68k
 	{
 	public:
@@ -83,13 +83,32 @@ namespace mc68k
 
 		virtual uint8_t read8(uint32_t _addr);
 		virtual uint16_t read16(uint32_t _addr);
-		virtual uint32_t read32(uint32_t _addr);
+
+		uint32_t read32(uint32_t _addr)
+		{
+			uint32_t res = static_cast<uint32_t>(read16(_addr)) << 16;
+			res |= read16(_addr + 2);
+			return res;
+		}
+
 		virtual void write8(uint32_t _addr, uint8_t _val);
 		virtual void write16(uint32_t _addr, uint16_t _val);
-		virtual void write32(uint32_t _addr, uint32_t _val);
+
+		void write32(uint32_t _addr, uint32_t _val)
+		{
+			write16(_addr, _val >> 16);
+			write16(_addr + 2, _val & 0xffff);
+		}
+
 
 		virtual uint16_t readImm16(uint32_t _addr) = 0;
-		uint32_t readImm32(uint32_t _addr);
+
+		uint32_t readImm32(uint32_t _addr)
+		{
+			uint32_t res = static_cast<uint32_t>(readImm16(_addr)) << 16;
+			res |= readImm16(_addr + 2);
+			return res;
+		}
 
 		uint32_t readIrqUserVector(uint8_t _level);
 
