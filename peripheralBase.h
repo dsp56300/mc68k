@@ -1,15 +1,21 @@
 #pragma once
 
 #include <cstdint>
-#include <cstddef>
 #include <array>
 
 #include "peripheralTypes.h"
+#include "memoryOps.h"
 
 namespace mc68k
 {
-	void periphBaseWriteW(uint8_t* _buffer, uint32_t _addr, uint16_t _val);
-	uint16_t periphBaseReadW(const uint8_t* _buffer, uint32_t _addr);
+	inline void periphBaseWriteW(uint8_t* _buffer, uint32_t _addr, uint16_t _val)
+	{
+		memoryOps::writeU16(_buffer, _addr, _val);
+	}
+	inline uint16_t periphBaseReadW(const uint8_t* _buffer, uint32_t _addr)
+	{
+		return memoryOps::readU16(_buffer, _addr);
+	}
 
 	template<uint32_t Base, uint32_t Size>
 	class PeripheralBase
@@ -34,7 +40,7 @@ namespace mc68k
 		{
 			m_buffer[static_cast<uint32_t>(_addr) - Base] = _val;
 		}
-		virtual void write16(PeriphAddress _addr, uint16_t _val)
+		virtual void write16(PeriphAddress _addr, const uint16_t _val)
 		{
 			return periphBaseWriteW(m_buffer.data(), static_cast<uint32_t>(_addr) - Base, _val);
 		}

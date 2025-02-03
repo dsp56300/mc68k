@@ -111,46 +111,6 @@ namespace mc68k
 		return 0;
 	}
 
-	uint8_t Mc68k::read8(uint32_t _addr)
-	{
-		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
-
-		if(m_gpt.isInRange(addr))			return m_gpt.read8(addr);
-		if(m_sim.isInRange(addr))			return m_sim.read8(addr);
-		if(m_qsm.isInRange(addr))			return m_qsm.read8(addr);
-
-		return 0;
-	}
-
-	uint16_t Mc68k::read16(uint32_t _addr)
-	{
-		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
-
-		if(m_gpt.isInRange(addr))			return m_gpt.read16(addr);
-		if(m_sim.isInRange(addr))			return m_sim.read16(addr);
-		if(m_qsm.isInRange(addr))			return m_qsm.read16(addr);
-
-		return 0;
-	}
-
-	void Mc68k::write8(uint32_t _addr, uint8_t _val)
-	{
-		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
-
-		if(m_gpt.isInRange(addr))			m_gpt.write8(addr, _val);
-		else if(m_sim.isInRange(addr))		m_sim.write8(addr, _val);
-		else if(m_qsm.isInRange(addr))		m_qsm.write8(addr, _val);
-	}
-
-	void Mc68k::write16(uint32_t _addr, uint16_t _val)
-	{
-		const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
-
-		if(m_gpt.isInRange(addr))			m_gpt.write16(addr, _val);
-		else if(m_sim.isInRange(addr))		m_sim.write16(addr, _val);
-		else if(m_qsm.isInRange(addr))		m_qsm.write16(addr, _val);
-	}
-
 	uint32_t Mc68k::readIrqUserVector(const uint8_t _level)
 	{
 		auto& vecs = m_pendingInterrupts[_level];

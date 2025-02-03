@@ -2,8 +2,8 @@
 
 #include <array>
 #include <string>
-#include <vector>
 
+#include "endian.h"
 #include "gpt.h"
 #include "qsm.h"
 #include "sim.h"
@@ -15,23 +15,7 @@ namespace mc68k
 	class Mc68k
 	{
 	public:
-		enum class HostEndian
-		{
-			Big,
-			Little
-		};
-
 		static constexpr uint32_t CpuStateSize = 600;
-
-		static constexpr HostEndian hostEndian()
-		{
-			constexpr uint32_t test32 = 0x01020304;
-			constexpr uint8_t test8 = static_cast<const uint8_t&>(test32);
-
-			static_assert(test8 == 0x01 || test8 == 0x04, "unable to determine endianess");
-
-			return test8 == 0x01 ? HostEndian::Big : HostEndian::Little;
-		}
 
 		Mc68k();
 		virtual ~Mc68k();
@@ -44,71 +28,47 @@ namespace mc68k
 		virtual void onReset() {}
 		virtual uint32_t onIllegalInstruction(uint32_t _opcode);
 
-		static void writeW(uint8_t* _buf, size_t _offset, uint16_t _value)
+		virtual uint8_t read8(const uint32_t _addr)
 		{
-			auto* p8 = &_buf[_offset];
-			auto* p16 = reinterpret_cast<uint16_t*>(p8);
+			const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
 
-			if constexpr (hostEndian() != HostEndian::Big)
-			{
-				_value = static_cast<uint16_t>((_value << 8) | (_value >> 8));
-			}
+			if(m_gpt.isInRange(addr))			return m_gpt.read8(addr);
+			if(m_sim.isInRange(addr))			return m_sim.read8(addr);
+			if(m_qsm.isInRange(addr))			return m_qsm.read8(addr);
 
-			*p16 = _value;
+			return 0;
 		}
 
-		static void writeW(std::vector<uint8_t>& _buf, size_t _offset, uint16_t _value)
+		virtual uint16_t read16(const uint32_t _addr)
 		{
-			writeW(_buf.data(), _offset, _value);
+			const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
+
+			if(m_gpt.isInRange(addr))			return m_gpt.read16(addr);
+			if(m_sim.isInRange(addr))			return m_sim.read16(addr);
+			if(m_qsm.isInRange(addr))			return m_qsm.read16(addr);
+
+			return 0;
 		}
 
-		static uint16_t readW(const uint8_t* _buf, size_t _offset)
+		virtual void write8(const uint32_t _addr, const uint8_t _val)
 		{
-			const auto* ptr = &_buf[_offset];
+			const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
 
-			const auto v16 = *reinterpret_cast<const uint16_t*>(ptr);
-
-			if constexpr (hostEndian() == HostEndian::Big)
-			{
-				return v16;
-			}
-
-			return static_cast<uint16_t>(v16 << 8 | v16 >> 8);
+			if(m_gpt.isInRange(addr))			m_gpt.write8(addr, _val);
+			else if(m_sim.isInRange(addr))		m_sim.write8(addr, _val);
+			else if(m_qsm.isInRange(addr))		m_qsm.write8(addr, _val);
 		}
 
-		static uint16_t readW(const std::vector<uint8_t>& _buf, size_t _offset)
+		virtual void write16(uint32_t _addr, uint16_t _val)
 		{
-			return readW(_buf.data(), _offset);
+			const auto addr = static_cast<PeriphAddress>(_addr & g_peripheralMask);
+
+			if(m_gpt.isInRange(addr))			m_gpt.write16(addr, _val);
+			else if(m_sim.isInRange(addr))		m_sim.write16(addr, _val);
+			else if(m_qsm.isInRange(addr))		m_qsm.write16(addr, _val);
 		}
-
-		virtual uint8_t read8(uint32_t _addr);
-		virtual uint16_t read16(uint32_t _addr);
-
-		uint32_t read32(uint32_t _addr)
-		{
-			uint32_t res = static_cast<uint32_t>(read16(_addr)) << 16;
-			res |= read16(_addr + 2);
-			return res;
-		}
-
-		virtual void write8(uint32_t _addr, uint8_t _val);
-		virtual void write16(uint32_t _addr, uint16_t _val);
-
-		void write32(uint32_t _addr, uint32_t _val)
-		{
-			write16(_addr, _val >> 16);
-			write16(_addr + 2, _val & 0xffff);
-		}
-
 
 		virtual uint16_t readImm16(uint32_t _addr) = 0;
-
-		uint32_t readImm32(uint32_t _addr)
-		{
-			uint32_t res = static_cast<uint32_t>(readImm16(_addr)) << 16;
-			res |= readImm16(_addr + 2);
-			return res;
-		}
 
 		uint32_t readIrqUserVector(uint8_t _level);
 
