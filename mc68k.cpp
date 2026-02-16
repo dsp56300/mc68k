@@ -188,13 +188,17 @@ namespace mc68k
 
 	void Mc68k::raiseIPL()
 	{
+		bool raised = false;
 		for(int i=static_cast<int>(m_pendingInterrupts.size())-1; i>0; --i)
 		{
 			if(!m_pendingInterrupts[i].empty())
 			{
 				m68k_set_irq(getCpuState(), static_cast<uint8_t>(i));
+				raised = true;
 				break;
 			}
 		}
+		if(!raised)
+			m68k_set_irq(getCpuState(), 0);
 	}
 }

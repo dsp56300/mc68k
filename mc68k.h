@@ -70,7 +70,7 @@ namespace mc68k
 
 		virtual uint16_t readImm16(uint32_t _addr) = 0;
 
-		uint32_t readIrqUserVector(uint8_t _level);
+		virtual uint32_t readIrqUserVector(uint8_t _level);
 
 		void reset();
 		void setPC(uint32_t _pc);
@@ -96,7 +96,7 @@ namespace mc68k
 
 		bool dumpAssembly(const std::string& _filename, uint32_t _first, uint32_t _count, bool _splitFunctions = true);
 		
-	private:
+	protected:
 		void raiseIPL();
 
 		std::array<uint8_t, CpuStateSize> m_cpuStateBuf;
