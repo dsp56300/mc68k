@@ -142,6 +142,11 @@ namespace mc68k
 		return m68k_get_reg(getCpuState(), M68K_REG_PC);
 	}
 
+	uint32_t Mc68k::getAReg(const uint32_t _index) const
+	{
+		return m68k_get_reg(getCpuState(), static_cast<m68k_register_t>(M68K_REG_A0 + _index));
+	}
+
 	uint32_t Mc68k::disassemble(uint32_t _pc, char* _buffer)
 	{
 		return m68k_disassemble(_buffer, _pc, m68k_get_reg(getCpuState(), M68K_REG_CPU_TYPE));
