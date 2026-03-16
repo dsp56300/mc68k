@@ -38,7 +38,7 @@ namespace mc68k
 
 		enum CvrBits
 		{
-			Hv				= 0x7f,		// CVR Host Vector (HV[6:0]) Bits 0–6, Interrupt Vector = 2*Hv
+			Hv				= 0x7f,		// CVR Host Vector (HV[6:0]) Bits 0ï¿½6, Interrupt Vector = 2*Hv
 			Hc				= (1<<7),	// CVR Host Command Bit (HC) Bit 7
 		};
 
@@ -63,6 +63,7 @@ namespace mc68k
 		bool pollInterruptRequest(uint8_t& _addr);
 
 		void writeRx(uint32_t _word);
+		void clearRx();
 
 		void exec(uint32_t _deltaCycles) override;
 

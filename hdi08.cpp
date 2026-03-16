@@ -134,6 +134,16 @@ namespace mc68k
 			pollRx();
 	}
 
+	void Hdi08::clearRx()
+	{
+		m_rxData.clear();
+
+		// Clear RXDF flag so firmware knows there's no pending data
+		auto s = PeripheralBase::read8(PeriphAddress::HdiISR);
+		s &= ~Rxdf;
+		PeripheralBase::write8(PeriphAddress::HdiISR, s);
+	}
+
 	void Hdi08::exec(const uint32_t _deltaCycles)
 	{
 		PeripheralBase::exec(_deltaCycles);
