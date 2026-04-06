@@ -78,6 +78,7 @@ namespace mc68k
 		uint32_t getPC() const;
 		
 		uint32_t getAReg(uint32_t _index) const;
+		uint32_t getDReg(uint32_t _index) const;
 
 		virtual uint32_t getResetPC() { return 0; }
 		virtual uint32_t getResetSP() { return 0; }

@@ -124,8 +124,6 @@ namespace mc68k
 
 	void Hdi08::writeRx(uint32_t _word)
 	{
-//		MCLOG("HDI writeRX=" << HEX(_word));
-
 		m_rxData.push_back(_word);
 
 		const auto s = isr();
@@ -272,7 +270,12 @@ namespace mc68k
 
 		if(!hasRX)
 		{
-			m_rxEmptyCallback(true);
+			// Only request data on the first byte of a read sequence.
+			// Requesting on intermediate bytes would allow concurrent DSP
+			// threads to deliver data mid-sequence, causing a torn read.
+			const auto firstByte = littleEndian() ? WordFlags::L : WordFlags::H;
+			if(_index == firstByte)
+				m_rxEmptyCallback(true);
 
 			const auto s = isr();
 
