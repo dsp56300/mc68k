@@ -333,7 +333,6 @@ namespace mc68k
 
 		// push out data
 		const auto data = PeripheralBase::read16(transmitRamAddr(m_nextQueue));
-		m_spiTxData.push_back(data);
 		m_spiTxCallback(data, m_nextQueue);
 
 		// update completed queue index

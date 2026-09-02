@@ -104,7 +104,6 @@ namespace mc68k
 		Qspi m_qspi;
 		uint8_t m_nextQueue = 0xff;
 		uint32_t m_spiDelay = 0;
-		std::deque<uint16_t> m_spiTxData;
 
 		std::mutex m_mutexSciTx;
 		std::deque<uint16_t> m_sciTxData;
