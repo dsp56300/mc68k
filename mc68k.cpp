@@ -143,6 +143,11 @@ namespace mc68k
 		m68k_pulse_reset(getCpuState());
 	}
 
+	void Mc68k::resumeFromStop()
+	{
+		getCpuState()->stopped &= ~STOP_LEVEL_STOP;
+	}
+
 	void Mc68k::setPC(uint32_t _pc)
 	{
 		m68k_set_reg(getCpuState(), M68K_REG_PC, _pc);
@@ -153,6 +158,16 @@ namespace mc68k
 		return m68k_get_reg(getCpuState(), M68K_REG_PC);
 	}
 
+	void Mc68k::setAReg(const uint32_t _index, const uint32_t _value)
+	{
+		m68k_set_reg(getCpuState(), static_cast<m68k_register_t>(M68K_REG_A0 + _index), _value);
+	}
+
+	void Mc68k::setDReg(const uint32_t _index, const uint32_t _value)
+	{
+		m68k_set_reg(getCpuState(), static_cast<m68k_register_t>(M68K_REG_D0 + _index), _value);
+	}
+
 	uint32_t Mc68k::getAReg(const uint32_t _index) const
 	{
 		return m68k_get_reg(getCpuState(), static_cast<m68k_register_t>(M68K_REG_A0 + _index));
@@ -161,6 +176,16 @@ namespace mc68k
 	uint32_t Mc68k::getDReg(const uint32_t _index) const
 	{
 		return m68k_get_reg(getCpuState(), static_cast<m68k_register_t>(M68K_REG_D0 + _index));
+	}
+
+	void Mc68k::setSR(const uint32_t _value)
+	{
+		m68k_set_reg(getCpuState(), M68K_REG_SR, _value);
+	}
+
+	uint32_t Mc68k::getSR() const
+	{
+		return m68k_get_reg(getCpuState(), M68K_REG_SR);
 	}
 
 	uint32_t Mc68k::disassemble(uint32_t _pc, char* _buffer)
