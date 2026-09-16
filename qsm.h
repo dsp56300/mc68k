@@ -92,6 +92,9 @@ namespace mc68k
 		void set(ScsrBits _bit);
 		uint16_t readSciRX();
 
+		uint32_t qspiWordDelayCycles(uint8_t _queueIndex);
+
+		static PeriphAddress commandRamAddr(uint8_t _offset);
 		static PeriphAddress transmitRamAddr(uint8_t _offset);
 		static PeriphAddress receiveRamAddr(uint8_t _offset);
 
