@@ -20,6 +20,12 @@ namespace mc68k
 			if(m_direction == _dir)
 				return;
 
+			// A pin that turns into an output drives whatever the data register holds, including a value
+			// written to it while the pin was still an input - firmware writes the level first and enables
+			// the driver afterwards to avoid a glitch. writeTX keeps that value for exactly this moment.
+			const auto newOutputs = static_cast<uint8_t>(_dir & ~m_direction & m_enabledPins);
+			m_data = static_cast<uint8_t>((m_data & ~newOutputs) | (m_dataTX & newOutputs));
+
 			m_direction = _dir;
 			m_dirChangeCallback(*this);
 		}
@@ -65,6 +71,7 @@ namespace mc68k
 		uint8_t m_direction = 0;		// 0 = input, 1 = output
 		uint8_t m_enabledPins = 0xff;
 		uint8_t m_data = 0;
+		uint8_t m_dataTX = 0;	// the data register itself, written regardless of the direction of a pin
 		uint32_t m_writeCounter = 0;
 		std::function<void(const Port&)> m_dirChangeCallback;
 		std::function<void(const Port&)> m_writeTXCallback;

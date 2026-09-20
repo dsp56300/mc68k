@@ -11,6 +11,8 @@ namespace mc68k
 
 	void Port::writeTX(const uint8_t _data)
 	{
+		m_dataTX = _data;
+
 		// only write pins that are enabled and that are set to output
 		const auto mask = m_direction & m_enabledPins;
 		m_data &= ~mask;
