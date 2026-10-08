@@ -135,7 +135,10 @@ namespace mc68k
 				startTransmit();
 			return;
 		case PeriphAddress::Spcr2:
-//			MCLOG("Set SPCR2 to " << MCHEXN(_val, 4));
+			// the upper byte holds SPIFIE, WREN, WRTO and ENDQP. Only rewriting NEWQP restarts the queue (MC68331UM
+			// 6.3.1.1), an interrupt handler that toggles SPIFIE with bclr/bset on every transfer must not repeat a word
+			return;
+		case PeriphAddress::Spcr2LSB:
 			if(spcr1() & g_spcr1_speMask)
 				startTransmit();
 			return;
@@ -214,7 +217,7 @@ namespace mc68k
 			}
 			else
 			{
-				// the word ended within this instruction, the rest of its cycles already count for the next one
+				// the slot ended within this instruction, the rest of its cycles already count for the next one
 				const auto remainder = _deltaCycles - m_spiDelay;
 				m_spiDelay = 0;
 				execTransmit();
@@ -313,6 +316,11 @@ namespace mc68k
 		// clear completion flag
 		spsr(spsr() & ~g_spsr_spifMask);
 
+		// An idle QSPI executes the first entry right away. While a transfer runs, a new NEWQP takes effect when the
+		// current word's slot has elapsed (MC68331UM 6.3.1.1)
+		if(m_nextQueue == 0xff)
+			m_spiDelay = 0;
+
 		m_nextQueue = _startAtZero ? 0 : (spcr2() & g_spcr2_newqpMask);
 
 		// Do NOT process the SPI queue synchronously — let exec() handle it.
@@ -334,35 +342,46 @@ namespace mc68k
 		if(!wrap && (spsr() & g_spsr_spifMask))
 			return;
 
-		// the time until this word completes (see qspiWordDelayCycles)
+		// the slot of the word in flight has elapsed, including its delay after transfer
+		if(m_currentQueue != 0xff)
+		{
+			// update completed queue index
+			auto sr = spsr();
+			sr &= ~g_spsr_cptqpMask;
+			sr |= m_currentQueue;
+
+			spsr(sr);
+
+			m_currentQueue = 0xff;
+
+			const auto endqp = (spcr2() & g_spcr2_endqpMask) >> 8;
+
+			if(m_nextQueue > endqp)
+			{
+				finishTransfer();
+
+				// in wrap mode, the first entry of the queue follows without a gap
+				if(m_nextQueue == 0xff)
+					return;
+			}
+		}
+
+		// An entry's command and transmit data are read at the start of its slot, before the delay before SCK
+		// (MC68331UM Figure 6-5). The next entry is read when this slot has elapsed, see qspiWordDelayCycles
 		m_spiDelay = qspiWordDelayCycles(m_nextQueue);
 
 		// push out data
 		const auto data = PeripheralBase::read16(transmitRamAddr(m_nextQueue));
 		m_spiTxCallback(data, m_nextQueue);
 
-		// update completed queue index
-		auto sr = spsr();
-		sr &= ~g_spsr_cptqpMask;
-		sr |= m_nextQueue;
-
-		spsr(sr);
-
 		// advance to next or end
-		++m_nextQueue;
-
-		const auto endqp = (spcr2() & g_spcr2_endqpMask) >> 8;
-		const auto finished = m_nextQueue > endqp;
-
-		if(finished)
-		{
-			finishTransfer();
-		}
+		m_currentQueue = m_nextQueue++;
 	}
 
 	void Qsm::cancelTransmit()
 	{
 		m_nextQueue = 0xff;
+		m_currentQueue = 0xff;
 
 		// set completion flag
 		spsr(spsr() | g_spsr_spifMask);
@@ -471,11 +490,6 @@ namespace mc68k
 			startTransmit(wrapToZero);
 			if (savedSpif)
 				spsr(spsr() | g_spsr_spifMask);
-
-			// Baud-rate delay for the first word of the restarted transfer; without
-			// it, exec() sees m_spiDelay==0 and fires immediately (one QSPI IRQ per
-			// exec() call). See qspiWordDelayCycles.
-			m_spiDelay = qspiWordDelayCycles(m_nextQueue);
 		}
 
 		if(halt)

@@ -37,6 +37,8 @@ namespace mc68k
 		Oc1d			= 0xFF909,  // OC1 Action Dta Register $YFF909
 		Tcnt			= 0xFF90a,	// Timer Counter
 		TcntLSB			= 0xFF90b,
+		Pactl			= 0xFF90c,	// PACTL - Pulse Accumulator Control Register $YFF90C
+		Pacnt			= 0xFF90d,	// PACNT - Pulse Accumulator Counter $YFF90D
 		Toc1			= 0xFF914,	// TOC[1:4] - Output Compare Registers 1-4 $YFF914 - $YFF91A
 		Toc2			= 0xFF916,
 		Toc3			= 0xFF918,
@@ -113,6 +115,7 @@ namespace mc68k
 		Spcr0			= 0xFFC18,	// $YFFC18 QSPI Control Register 0
 		Spcr1			= 0xFFC1a,	// $YFFC1A QSPI Control Register 1
 		Spcr2			= 0xFFC1c,	// $YFFC1C QSPI Control Register 2
+		Spcr2LSB		= 0xFFC1d,
 		Spcr3			= 0xFFC1e,	// $YFFC1E QSPI Control Register 3
 		Spsr			= 0xFFC1f,	// $YFFC1F QSPI Status Register
 

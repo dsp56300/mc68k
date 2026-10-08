@@ -25,6 +25,17 @@ namespace mc68k
 		constexpr uint16_t g_tflg1_ocfAll = g_tflg1_ocfMask[0] | g_tflg1_ocfMask[1] | g_tflg1_ocfMask[2] | g_tflg1_ocfMask[3];
 
 		constexpr uint16_t g_tocCount = 2;	// we only need 2 for now, save performance by ignoring the others
+
+		constexpr uint8_t g_pactl_paen = 1<<6;
+
+		// TMSK2 and TFLG2 are the low bytes of the 16 bit TMSK1/TFLG1 reads
+		constexpr uint16_t g_tmsk2_paii = 1<<4;
+		constexpr uint16_t g_tmsk2_paovi = 1<<5;
+		constexpr uint16_t g_tflg2_paif = 1<<4;
+		constexpr uint16_t g_tflg2_paovf = 1<<5;
+
+		constexpr uint8_t g_vba_paov = 0xa;
+		constexpr uint8_t g_vba_pai = 0xb;
 	}
 
 	Gpt::Gpt(Mc68k& _mc68k): m_mc68k(_mc68k)
@@ -156,6 +167,28 @@ namespace mc68k
 		if(tmsk & g_tmsk1_ociMask[1])		injectInterrupt(g_vba_oc[1]);
 		if(tmsk & g_tmsk1_ociMask[2])		injectInterrupt(g_vba_oc[2]);
 		if(tmsk & g_tmsk1_ociMask[3])		injectInterrupt(g_vba_oc[3]);
+	}
+
+	void Gpt::pulseAccumulatorInput()
+	{
+		// ponytail: every call counts one event, gated time accumulation (PACTL PAMOD) and the edge select are not modelled
+		if(!(PeripheralBase::read8(PeriphAddress::Pactl) & g_pactl_paen))
+			return;
+
+		const auto pacnt = static_cast<uint8_t>(PeripheralBase::read8(PeriphAddress::Pacnt) + 1);
+		PeripheralBase::write8(PeriphAddress::Pacnt, pacnt);
+
+		auto tflg = static_cast<uint16_t>(PeripheralBase::read16(PeriphAddress::Tflg1) | g_tflg2_paif);
+		if(pacnt == 0)
+			tflg |= g_tflg2_paovf;
+		PeripheralBase::write16(PeriphAddress::Tflg1, tflg);
+
+		const auto tmsk = PeripheralBase::read16(PeriphAddress::Tmsk1);
+
+		if(pacnt == 0 && (tmsk & g_tmsk2_paovi))
+			injectInterrupt(g_vba_paov);
+		if(tmsk & g_tmsk2_paii)
+			injectInterrupt(g_vba_pai);
 	}
 
 	template<uint32_t TocIndex>

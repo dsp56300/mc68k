@@ -28,6 +28,9 @@ namespace mc68k
 
 		void timerOverflow();
 
+		// one event on the PAI pin
+		void pulseAccumulatorInput();
+
 	private:
 		template<uint32_t TocIndex>	void execToc(uint32_t _deltaCycles);
 		template<uint32_t TocIndex>	void updateToc();
