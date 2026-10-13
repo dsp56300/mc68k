@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <atomic>
+#include <mutex>
 #include <cstdio>
 #include <fstream>
 #include <cstring>	// strstr
@@ -70,6 +71,10 @@ namespace mc68k
 		getCpuState()->instance = this;
 
 		m68k_set_cpu_type(getCpuState(), M68K_CPU_TYPE_68020);
+		// Musashi builds its opcode table on the first m68k_init(), behind a plain flag: two instances booting at the
+		// same time, two plugins in one host, would run into a table that is still being built
+		static std::once_flag opcodeTableOnce;
+		std::call_once(opcodeTableOnce, [this] { m68k_init(getCpuState()); });
 		m68k_init(getCpuState());
 		m68k_set_int_ack_callback(getCpuState(), m68k_int_ack);
 		m68k_set_illg_instr_callback(getCpuState(), m68k_illegal_cbk);
