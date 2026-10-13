@@ -64,6 +64,9 @@ namespace mc68k
 
 		void writeRx(uint32_t _word);
 		void clearRx();
+		// Passive diagnostics; unlike readRX these do not acknowledge the word.
+		uint32_t currentRxWord() const { return m_rxd; }
+		size_t queuedRxWords() const { return m_rxData.size(); }
 
 		void exec(uint32_t _deltaCycles) override;
 
