@@ -281,8 +281,10 @@ namespace mc68k
 
 			if(!(s & Rxdf))
 			{
-//				MCLOG("Empty read of RX");
-				return 0;
+				// nothing new: the receive registers still hold the last word, as on the hardware. Firmware that
+				// reads an answer twice and keeps the second read depends on it
+				const auto shift = littleEndian() ? 8 * static_cast<uint32_t>(_index) : 8 * (2 - static_cast<uint32_t>(_index));
+				return static_cast<uint8_t>(m_rxd >> shift);
 			}
 		}
 
