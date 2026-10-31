@@ -74,12 +74,17 @@ namespace mc68k
 		virtual uint32_t readIrqUserVector(uint8_t _level);
 
 		void reset();
+		void resumeFromStop();
 
 		void setPC(uint32_t _pc);
 		uint32_t getPC() const;
 		
+		void setAReg(uint32_t _index, uint32_t _value);
+		void setDReg(uint32_t _index, uint32_t _value);
 		uint32_t getAReg(uint32_t _index) const;
 		uint32_t getDReg(uint32_t _index) const;
+		void setSR(uint32_t _value);
+		uint32_t getSR() const;
 
 		virtual uint32_t getResetPC() { return 0; }
 		virtual uint32_t getResetSP() { return 0; }
